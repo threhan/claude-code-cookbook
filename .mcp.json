@@ -12,12 +12,12 @@
       }
     },
     "notionMCP": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.notion.com/sse"]
+      "command": "cmd.exe",
+      "args": ["/c", "npx", "-y", "mcp-remote", "https://mcp.notion.com/sse"]
     },
     "deepwiki": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://mcp.deepwiki.com/sse"]
+      "command": "cmd.exe",
+      "args": ["/c", "npx", "mcp-remote", "https://mcp.deepwiki.com/sse"]
     },
     "filesystem": {
       "command": "npx",

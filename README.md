@@ -165,7 +165,7 @@ flowchart TB
 
 ### 引入步骤
 
-1. **克隆仓库**: `git clone https://github.com/wasabeef/claude-code-cookbook.git ~/.claude`
+1. **克隆仓库**: `git clone https://github.com/threhan/claude-code-cookbook.git ~/.claude`
 2. **在客户端中设置路径**: 在 Claude 的客户端中，指定上述目录的路径
 3. **确认路径**: 确认 `settings.json` 中的脚本路径与您的环境一致
 
