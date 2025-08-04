@@ -4,8 +4,8 @@
     "BASH_DEFAULT_TIMEOUT_MS": "600000",
     "BASH_MAX_TIMEOUT_MS": "600000",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "true",
-    "CLAUDE_LANGUAGE": "ja",
-    "SHELL": "/opt/homebrew/bin/zsh"
+    "CLAUDE_LANGUAGE": "zh_cn",
+    "SHELL": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -105,6 +105,15 @@
             "command": "~/.claude/scripts/preserve-file-permissions.sh"
           }
         ]
+      },
+      {
+        "matcher": "web_fetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/scripts/replace-websearch.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -137,7 +146,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"確認待ち\" with title \"Claude Code\"' && afplay -v 0.3 ~/.claude/assets/confirm.mp3"
+             "command": "powershell -Command \"Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('等待确认', 'Claude Code')\""
           }
         ]
       }
@@ -152,7 +161,7 @@
           },
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"タスク完了\" with title \"Claude Code\"' && afplay -v 0.3 ~/.claude/assets/perfect.mp3"
+             "command": "powershell -Command \"Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('任务结束', 'Claude Code')\""
           }
         ]
       }

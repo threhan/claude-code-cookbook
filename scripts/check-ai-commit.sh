@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# AI 署名チェックスクリプト
-# git commit コマンドで AI の署名が含まれている場合にエラーを出す
+# AI 签名检查脚本
+# 如果 git commit 命令中包含 AI 签名，则报错
 
-# jq で Bash ツールの入力を解析
+# 使用 jq 解析 Bash 工具的输入
 COMMAND=$(jq -r '.tool_input.command')
 
-# git commit コマンドかチェック
+# 检查是否为 git commit 命令
 if echo "$COMMAND" | grep -q '^git commit'; then
-  # AI 署名が含まれているかチェック
+  # 检查是否包含 AI 签名
   if echo "$COMMAND" | grep -q '🤖 Generated with'; then
-    echo "Error: コミットメッセージに AI 署名が含まれています" >&2
-    echo "AI 署名を削除してから再度コミットしてください" >&2
+    echo "Error: 提交信息中包含 AI 签名" >&2
+    echo "请删除 AI 签名后重新提交" >&2
     exit 2
   fi
 fi
 
-# 問題なければ成功
+# 如果没有问题则成功
 exit 0

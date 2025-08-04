@@ -1,148 +1,148 @@
 # Claude Code Cookbook
 
-Claude Code をもっと便利に使うための設定集です。
+这是一份让 Claude Code 更方便使用的配置集。
 
-細かい確認を省いて自動的に作業を進めてくれるので、本来やりたいことに集中できます。
-コードの修正やテストの実行、ドキュメントの更新など、よくある作業は Claude Code が判断して実行します。
+它会自动处理繁琐的确认工作，让您能专注于真正想做的事情。
+代码修改、测试执行、文档更新等常见任务，Claude Code 会自行判断并执行。
 
-## 主要機能
+## 主要功能
 
-3 つの機能で Claude Code の動作をカスタマイズできます。
+您可以通过 3 种功能来自定义 Claude Code 的行为。
 
-- **Commands**: `/` で始まるカスタムコマンド
-- **Roles**: 専門家の視点で回答するための役割設定
-- **Hooks**: 特定のタイミングでスクリプトを自動実行
+- **Commands**: 以 `/` 开头的自定义命令
+- **Roles**: 为获得专家视角的回答而设定的角色
+- **Hooks**: 在特定时机自动执行的脚本
 
 ---
 
-## 機能一覧
+## 功能列表
 
-### Commands（カスタムコマンド）
+### Commands（自定义命令）
 
-`/commands` ディレクトリ内の Markdown ファイルとして保存されています。`/` に続けてファイル名を入力すると実行できます。
+作为 Markdown 文件保存在 `/commands` 目录中。在 `/` 后输入文件名即可执行。
 
-| コマンド | 説明 |
+| 命令 | 说明 |
 | :--- | :--- |
-| `/analyze-dependencies` | プロジェクトの依存関係を分析し、循環依存や構造的な問題を視覚化する。 |
-| `/analyze-performance` | アプリケーションのパフォーマンス問題を分析し、技術的負債の観点から改善策を提案する。 |
-| `/check-fact` | プロジェクト内のコードベース、ドキュメントを参照し、与えられた情報の正誤を確認する。 |
-| `/check-github-ci` | GitHub Actions の CI 状況を監視し、完了まで追跡する。 |
-| `/check-prompt` | 現在のプロンプトの内容をレビューし、改善案を提示する。 |
-| `/commit-message` | 変更内容に基づいてコミットメッセージだけを生成する。 |
-| `/context7` | Context7 MCP を使用してコンテキスト管理を行う。 |
-| `/design-patterns` | デザインパターンに基づいた実装を提案・レビューする。 |
-| `/explain-code` | 選択されたコードの機能やロジックを分かりやすく説明する。 |
-| `/fix-error` | エラーメッセージを元に、コードの修正案を提示する。 |
-| `/multi-role` | 複数の役割（Role）を組み合わせて、同じ対象を並行分析し統合レポートを生成する。 |
-| `/plan` | 実装前の計画立案モードを起動し、詳細な実装戦略を策定する。 |
-| `/pr-auto-update` | Pull Request の内容（説明、ラベル）を自動で更新する。 |
-| `/pr-create` | Git 変更分析に基づく自動 PR 作成で効率的な Pull Request ワークフローを実現する。 |
-| `/pr-feedback` | Pull Request のレビューコメントを効率的に対応し、エラー分析 3 段階アプローチで根本解決を図る。 |
-| `/pr-issue` | 現在のリポジトリのオープン Issue 一覧を優先順位付きで表示する。 |
-| `/pr-list` | 現在のリポジトリのオープン PR 一覧を優先順位付きで表示する。 |
-| `/pr-review` | Pull Request の体系的レビューでコード品質とアーキテクチャの健全性を確保する。 |
-| `/refactor` | 安全で段階的なコードリファクタリングを実施し、SOLID 原則の遵守状況を評価する。 |
-| `/role-debate` | 複数の役割（Role）で、特定のテーマについて討論させる。 |
-| `/role-help` | 利用可能な Role の一覧と説明を表示する。 |
-| `/role` | 指定した役割（Role）として振る舞う。 |
-| `/screenshot` | 画面のスクリーンショットを取得し解析する |
-| `/search-gemini` | Gemini を使って Web 検索を行う。 |
-| `/semantic-commit` | 大きな変更を意味のある最小単位に分割し、セマンティックなコミットメッセージで順次コミットする。 |
-| `/sequential-thinking` | Sequential Thinking MCP を使用して複雑な問題を順を追って段階的に考え、結論を導き出す。 |
-| `/show-plan` | 現在の実行計画を表示する。 |
-| `/smart-review` | 高度なレビューを行い、コード品質を向上させる。 |
-| `/spec` | 要求事項から、Kiro の spec-driven development に準拠した詳細な仕様書を段階的に作成する。 |
-| `/style-ai-writting` | AI が生成したような不自然な文章を検出し、修正する。 |
-| `/task` | 専用エージェントを起動して、複雑な検索・調査・分析タスクを自律的に実行する。 |
-| `/tech-debt` | プロジェクトの技術的負債を分析し、優先順位付けされた改善計画を作成する。 |
-| `/ultrathink` | 複雑な課題や重要な決定に対して、段階的で構造化された思考プロセスを実行する。 |
-| `/update-dart-doc` | Dart ファイルの DartDoc コメントを体系的に管理し、高品質な日本語ドキュメントを維持する。 |
-| `/update-doc-string` | 複数言語対応のドキュメント文字列を統一的に管理・更新する。 |
-| `/update-flutter-deps` | Flutter プロジェクトの依存関係を安全に更新する。 |
-| `/update-node-deps` | Node.js プロジェクトの依存関係を安全に更新する。 |
-| `/update-rust-deps` | Rust プロジェクトの依存関係を安全に更新する。 |
+| `/analyze-dependencies` | 分析项目的依赖关系，并将循环依赖和结构性问题可视化。 |
+| `/analyze-performance` | 分析应用程序的性能问题，并从技术债务的角度提出改进建议。 |
+| `/check-fact` | 参考项目内的代码库和文档，确认所提供信息的准确性。 |
+| `/check-github-ci` | 监控 GitHub Actions 的 CI 状态，并跟踪至完成。 |
+| `/check-prompt` | 审查当前提示的内容，并提出改进建议。 |
+| `/commit-message` | 仅根据变更内容生成提交信息。 |
+| `/context7` | 使用 Context7 MCP 进行上下文管理。 |
+| `/design-patterns` | 提出并审查基于设计模式的实现。 |
+| `/explain-code` | 浅显易懂地解释所选代码的功能和逻辑。 |
+| `/fix-error` | 根据错误消息，提出代码修复建议。 |
+| `/multi-role` | 组合多个角色（Role），并行分析同一对象并生成综合报告。 |
+| `/plan` | 启动实施前的计划制定模式，制定详细的实施策略。 |
+| `/pr-auto-update` | 自动更新 Pull Request 的内容（描述、标签）。 |
+| `/pr-create` | 通过基于 Git 变更分析的自动 PR 创建，实现高效的 Pull Request 工作流。 |
+| `/pr-feedback` | 高效处理 Pull Request 的审查评论，并通过三阶段错误分析法从根本上解决问题。 |
+| `/pr-issue` | 按优先级显示当前仓库的开放问题列表。 |
+| `/pr-list` | 按优先级显示当前仓库的开放 PR 列表。 |
+| `/pr-review` | 通过对 Pull Request 的系统性审查，确保代码质量和架构的健全性。 |
+| `/refactor` | 安全、分阶段地进行代码重构，并评估 SOLID 原则的遵守情况。 |
+| `/role-debate` | 让多个角色（Role）就特定主题进行辩论。 |
+| `/role-help` | 显示可用角色（Role）的列表和说明。 |
+| `/role` | 作为指定的角色（Role）行动。 |
+| `/screenshot` | 截取并分析屏幕截图 |
+| `/search-gemini` | 使用 Gemini 进行 Web 搜索。 |
+| `/semantic-commit` | 将大的变更分解为有意义的最小单元，并使用语义化的提交信息依次提交。 |
+| `/sequential-thinking` | 使用 Sequential Thinking MCP，按部就班地思考复杂问题，并得出结论。 |
+| `/show-plan` | 显示当前的执行计划。 |
+| `/smart-review` | 进行高级审查，提高代码质量。 |
+| `/spec` | 根据需求，分阶段创建符合 Kiro 的 spec-driven development 的详细规格书。 |
+| `/style-ai-writting` | 检测并修正由 AI 生成的不自然的文章。 |
+| `/task` | 启动专用代理，自主执行复杂的搜索、调查和分析任务。 |
+| `/tech-debt` | 分析项目的技术债务，并创建优先级的改进计划。 |
+| `/ultrathink` | 针对复杂课题或重要决策，执行分阶段、结构化的思考过程。 |
+| `/update-dart-doc` | 系统地管理 Dart 文件的 DartDoc 注释，以维护高质量的中文文档。 |
+| `/update-doc-string` | 统一管理和更新多语言的文档字符串。 |
+| `/update-flutter-deps` | 安全地更新 Flutter 项目的依赖项。 |
+| `/update-node-deps` | 安全地更新 Node.js 项目的依赖项。 |
+| `/update-rust-deps` | 安全地更新 Rust 项目的依赖项。 |
 
-### Roles（役割設定）
+### Roles（角色设定）
 
-`agents/roles/` ディレクトリ内の Markdown ファイルで定義されています。Claude に専門家の視点を持たせて、より的確な回答を得られます。
+在 `agents/roles/` 目录中的 Markdown 文件中定义。让 Claude 拥有专家视角，从而获得更准确的回答。
 
-各ロールは**サブエージェントとして独立実行**することも可能です。`--agent` オプションを使用すると、メインの会話コンテキストを妨げることなく、大規模な分析や専門的な処理を並列実行できます。
+每个角色也可以**作为子代理独立执行**。使用 `--agent` 选项，可以在不干扰主对话上下文的情况下，并行执行大规模分析或专业处理。
 
-| ロール | 説明 |
+| 角色 | 说明 |
 | :--- | :--- |
-| `/role analyzer` | システム分析の専門家として、コードやアーキテクチャの分析を行う。 |
-| `/role architect` | ソフトウェアアーキテクトとして、設計に関するレビューや提案を行う。 |
-| `/role frontend` | フロントエンドの専門家として、UI/UX やパフォーマンスに関する助言をする。 |
-| `/role mobile` | モバイルアプリ開発の専門家として、iOS/Android のベストプラクティスに基づいた回答をする。 |
-| `/role performance` | パフォーマンス最適化の専門家として、速度やメモリ使用量の改善を提案する。 |
-| `/role qa` | QA エンジニアとして、テスト計画や品質保証の観点からレビューする。 |
-| `/role reviewer` | コードレビュアーとして、可読性や保守性の観点からコードを評価する。 |
-| `/role security` | セキュリティ専門家として、脆弱性やセキュリティリスクを指摘する。 |
+| `/role analyzer` | 作为系统分析专家，对代码和架构进行分析。 |
+| `/role architect` | 作为软件架构师，对设计进行审查和建议。 |
+| `/role frontend` | 作为前端专家，就 UI/UX 和性能提供建议。 |
+| `/role mobile` | 作为移动应用开发专家，根据 iOS/Android 的最佳实践进行回答。 |
+| `/role performance` | 作为性能优化专家，提出速度和内存使用方面的改进建议。 |
+| `/role qa` | 作为 QA 工程师，从测试计划和质量保证的角度进行审查。 |
+| `/role reviewer` | 作为代码审查员，从可读性和可维护性的角度评估代码。 |
+| `/role security` | 作为安全专家，指出漏洞和安全风险。 |
 
-#### サブエージェント実行例
+#### 子代理执行示例
 
 ```bash
-# 通常モード（メインコンテキストで実行）
+# 常规模式（在主上下文中执行）
 /role security
-「このプロジェクトのセキュリティチェック」
+“对此项目进行安全检查”
 
-# サブエージェントモード（独立コンテキストで実行）
+# 子代理模式（在独立上下文中执行）
 /role security --agent
-「プロジェクト全体のセキュリティ監査を実行」
+“执行整个项目的安全审计”
 
-# 複数ロールの並列分析
+# 多角色并行分析
 /multi-role security,performance --agent
-「システム全体のセキュリティとパフォーマンスを包括的に分析」
+“全面分析整个系统的安全性和性能”
 ```
 
-### Hooks（自動化スクリプト）
+### Hooks（自动化脚本）
 
-`settings.json` で設定して、開発作業を自動化できます。
+在 `settings.json` 中进行设置，以自动化开发工作。
 
-| 実行スクリプト | イベント | 説明 |
+| 执行脚本 | 事件 | 说明 |
 | :--- | :--- | :--- |
-| `deny-check.sh` | `PreToolUse` | `rm -rf /` のような危険なコマンドの実行を未然に防ぐ。 |
-| `check-ai-commit.sh` | `PreToolUse` | `git commit` でコミットメッセージに AI の署名が含まれている場合にエラーを出す。 |
-| `preserve-file-permissions.sh` | `PreToolUse` / `PostToolUse` | ファイル編集前に元の権限を保存し、編集後に復元する。Claude Code が権限を変更するのを防ぐ。 |
-| `ja-space-format.sh` | `PostToolUse` | ファイル保存時に、日本語と英数字の間のスペースを自動で整形する。 |
-| `auto-comment.sh` | `PostToolUse` | 新規ファイル作成時や大幅な編集時に、docstring や API ドキュメントの追加を促す。 |
-| `notify-waiting` | `Notification` | Claude がユーザーの確認を待っている時に、macOS の通知センターでお知らせする。 |
-| `check-continue.sh` | `Stop` | タスク完了時に、継続可能なタスクがないか確認する。 |
-| `(osascript)` | `Stop` | 全タスク完了時に、macOS の通知センターで完了を知らせる。 |
+| `deny-check.sh` | `PreToolUse` | 防止执行 `rm -rf /` 等危险命令。 |
+| `check-ai-commit.sh` | `PreToolUse` | 在 `git commit` 时，如果提交信息中包含 AI 签名，则报错。 |
+| `preserve-file-permissions.sh` | `PreToolUse` / `PostToolUse` | 在编辑文件前保存原始权限，并在编辑后恢复。防止 Claude Code 更改权限。 |
+| `ja-space-format.sh` | `PostToolUse` | 在保存文件时，自动格式化中文和英数字之间的空格。 |
+| `auto-comment.sh` | `PostToolUse` | 在创建新文件或进行大幅编辑时，提示添加 docstring 或 API 文档。 |
+| `notify-waiting` | `Notification` | 当 Claude 等待用户确认时，在 macOS 的通知中心发出通知。 |
+| `check-continue.sh` | `Stop` | 任务完成时，检查是否还有可继续的任务。 |
+| `(osascript)` | `Stop` | 所有任务完成时，在 macOS 的通知中心通知完成。 |
 
 ---
 
-## 開発フローとコマンド使用ガイド
+## 开发流程与命令使用指南
 
-### 一般的な開発フローでのコマンド活用例
+### 在一般开发流程中活用命令的示例
 
 ```mermaid
 flowchart TB
-    Start([タスク確認]) --> PRList["/pr-list<br/>オープン PR 一覧"]
-    Start --> PRIssue["/pr-issue<br/>オープン Issue 一覧"]
+    Start([确认任务]) --> PRList["/pr-list<br/>开放 PR 列表"]
+    Start --> PRIssue["/pr-issue<br/>开放问题列表"]
 
-    PRList --> TaskType{種類は？}
+    PRList --> TaskType{类型是？}
     PRIssue --> TaskType
 
-    TaskType -->|新機能| Plan["/spec<br/>要件定義・設計"]
-    TaskType -->|バグ修正| Fix["/fix-error<br/>エラー分析"]
-    TaskType -->|リファクタリング| Refactor["/refactor<br/>改善"]
-    TaskType -->|レビュー| Review["/pr-review<br/>レビュー"]
+    TaskType -->|新功能| Plan["/spec<br/>需求定义/设计"]
+    TaskType -->|错误修复| Fix["/fix-error<br/>错误分析"]
+    TaskType -->|重构| Refactor["/refactor<br/>改进"]
+    TaskType -->|审查| Review["/pr-review<br/>审查"]
 
-    Plan --> Design["/role architect<br/>/role-debate<br/>設計相談"]
-    Design --> Implementation[実装・テスト]
+    Plan --> Design["/role architect<br/>/role-debate<br/>设计咨询"]
+    Design --> Implementation[实现/测试]
     Fix --> Implementation
     Refactor --> Implementation
     Review --> Implementation
 
-    Implementation --> Check["/smart-review<br/>品質チェック"]
-    Check --> Commit["/semantic-commit<br/>目的単位でコミット"]
-    Commit --> PR["/pr-create<br/>PR 自動作成"]
-    PR --> CI["/check-github-ci<br/>CI 状況確認"]
+    Implementation --> Check["/smart-review<br/>质量检查"]
+    Check --> Commit["/semantic-commit<br/>按目的单元提交"]
+    Commit --> PR["/pr-create<br/>自动创建 PR"]
+    PR --> CI["/check-github-ci<br/>确认 CI 状态"]
 
-    CI --> Status{問題あり？}
-    Status -->|はい| Feedback["修正対応<br/>/pr-feedback<br/>/fix-error"]
-    Status -->|いいえ| End([完了])
+    CI --> Status{有问题吗？}
+    Status -->|是| Feedback["修复<br/>/pr-feedback<br/>/fix-error"]
+    Status -->|否| End([完成])
 
     Feedback --> Implementation
 
@@ -161,16 +161,16 @@ flowchart TB
 
 ---
 
-## 導入とカスタマイズ
+## 引入与自定义
 
-### 導入手順
+### 引入步骤
 
-1. **リポジトリをクローン**: `git clone https://github.com/wasabeef/claude-code-cookbook.git ~/.claude`
-2. **クライアントでパスを設定**: Claude のクライアントで、上記ディレクトリのパスを指定します
-3. **パスの確認**: `settings.json` 内のスクリプトパスが環境と一致しているか確認します
+1. **克隆仓库**: `git clone https://github.com/wasabeef/claude-code-cookbook.git ~/.claude`
+2. **在客户端中设置路径**: 在 Claude 的客户端中，指定上述目录的路径
+3. **确认路径**: 确认 `settings.json` 中的脚本路径与您的环境一致
 
-### カスタマイズ
+### 自定义
 
-- **コマンドの追加**: `commands/` に `.md` ファイルを追加するだけです
-- **ロールの追加**: `agents/roles/` に `.md` ファイルを追加するだけです
-- **Hooks の編集**: `settings.json` を編集して、自動化処理を変更できます
+- **添加命令**: 只需在 `commands/` 中添加 `.md` 文件
+- **添加角色**: 只需在 `agents/roles/` 中添加 `.md` 文件
+- **编辑 Hooks**: 编辑 `settings.json` 即可更改自动化处理

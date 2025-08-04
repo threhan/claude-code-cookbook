@@ -1,78 +1,78 @@
-## Issue List
+## 问题列表
 
-現在のリポジトリのオープン Issue 一覧を優先順位付きで表示します。
+按优先级显示当前仓库的开放问题列表。
 
-### 使い方
+### 使用方法
 
 ```bash
-# Claude に依頼
-「オープン Issue 一覧を優先順位付きで表示して」
+# 请求 Claude
+“请按优先级显示开放问题列表”
 ```
 
-### 基本例
+### 基本示例
 
 ```bash
-# リポジトリ情報を取得
+# 获取仓库信息
 gh repo view --json nameWithOwner | jq -r '.nameWithOwner'
 
-# オープン Issue 情報を取得して Claude に依頼
+# 获取开放问题信息并请求 Claude
 gh issue list --state open --json number,title,author,createdAt,updatedAt,labels,assignees,comments --limit 30
 
-「上記の Issue を優先度別に整理して、各 Issue の 2 行概要も含めて表示して。URL は上記で取得したリポジトリ名を使用して生成して」
+“请按优先级整理上述问题，并显示每个问题的两行摘要。请使用上面获取的仓库名称生成 URL”
 ```
 
-### 表示形式
+### 显示格式
 
 ```
-オープン Issue 一覧（優先順位順）
+开放问题列表（按优先级排序）
 
-### 高優先度
-#番号 タイトル [ラベル] | 作者 | オープンから経過時間 | コメント数 | 担当者
-      ├─ 概要 1 行目
-      └─ 概要 2 行目
-      https://github.com/owner/repo/issues/番号
+### 高优先级
+#编号 标题 [标签] | 作者 | 自开放以来的时间 | 评论数 | 负责人
+      ├─ 摘要第一行
+      └─ 摘要第二行
+      https://github.com/owner/repo/issues/编号
 
-### 中優先度
-（同様の形式）
+### 中优先级
+（格式同上）
 
-### 低優先度
-（同様の形式）
+### 低优先级
+（格式同上）
 ```
 
-### 優先度の判定基準
+### 优先级判断标准
 
-**高優先度**
+**高优先级**
 
-- `bug` ラベルが付いている Issue
-- `critical` や `urgent` ラベルが付いている Issue
-- `security` ラベルが付いている Issue
+- 带有 `bug` 标签的问题
+- 带有 `critical` 或 `urgent` 标签的问题
+- 带有 `security` 标签的问题
 
-**中優先度**
+**中优先级**
 
-- `enhancement` ラベルが付いている Issue
-- `feature` ラベルが付いている Issue
-- 担当者が設定されている Issue
+- 带有 `enhancement` 标签的问题
+- 带有 `feature` 标签的问题
+- 已分配负责人的问题
 
-**低優先度**
+**低优先级**
 
-- `documentation` ラベルが付いている Issue
-- `good first issue` ラベルが付いている Issue
-- `wontfix` や `duplicate` ラベルが付いている Issue
+- 带有 `documentation` 标签的问题
+- 带有 `good first issue` 标签的问题
+- 带有 `wontfix` 或 `duplicate` 标签的问题
 
-### ラベルによるフィルタリング
+### 按标签筛选
 
 ```bash
-# 特定のラベルの Issue のみ取得
+# 仅获取特定标签的问题
 gh issue list --state open --label "bug" --json number,title,author,createdAt,labels,comments --limit 30
 
-# 複数ラベルでフィルタリング（AND 条件）
+# 使用多个标签进行筛选（AND 条件）
 gh issue list --state open --label "bug,high-priority" --json number,title,author,createdAt,labels,comments --limit 30
 ```
 
-### 注意事項
+### 注意事项
 
-- GitHub CLI (`gh`) が必要です
-- オープン状態の Issue のみ表示します
-- 最大 30 件の Issue を表示します
-- 経過時間は Issue がオープンされてからの時間です
-- Issue の URL は実際のリポジトリ名から自動生成されます
+- 需要 GitHub CLI (`gh`)
+- 仅显示开放状态的问题
+- 最多显示 30 个问题
+- 经过时间是指问题开放以来的时间
+- 问题的 URL 是根据实际仓库名称自动生成的

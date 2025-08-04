@@ -1,66 +1,66 @@
-## Gemini Web Search
+## Gemini Web 搜索
 
-Gemini CLI で Web 検索を実行して最新情報を取得します。
+通过 Gemini CLI 执行 Web 搜索以获取最新信息。
 
-### 使い方
+### 使用方法
 
 ```bash
-# Gemini CLI 経由で Web 検索（必須）
-gemini --prompt "WebSearch: <検索クエリ>"
+# 通过 Gemini CLI 进行 Web 搜索（必需）
+gemini --prompt "WebSearch: <搜索查询>"
 ```
 
-### 基本例
+### 基本示例
 
 ```bash
-# Gemini CLI を使用
-gemini --prompt "WebSearch: React 19 新機能"
-gemini --prompt "WebSearch: TypeError Cannot read property of undefined 解決方法"
+# 使用 Gemini CLI
+gemini --prompt "WebSearch: React 19 新功能"
+gemini --prompt "WebSearch: TypeError Cannot read property of undefined 解决方法"
 ```
 
-### Claude との連携
+### 与 Claude 协作
 
 ```bash
-# ドキュメント検索と要約
-gemini --prompt "WebSearch: Next.js 14 App Router 公式ドキュメント"
-「検索結果を要約して主要な機能を説明して」
+# 文档搜索和摘要
+gemini --prompt "WebSearch: Next.js 14 App Router 官方文档"
+“请总结搜索结果并解释主要功能”
 
-# エラー調査
+# 错误调查
 cat error.log
-gemini --prompt "WebSearch: [エラーメッセージ] 解決方法"
-「検索結果から最も適切な解決方法を提案して」
+gemini --prompt "WebSearch: [错误消息] 解决方法"
+“请从搜索结果中推荐最合适的解决方法”
 
-# 技術比較
+# 技术比较
 gemini --prompt "WebSearch: Rust vs Go performance benchmark 2024"
-「検索結果からパフォーマンスの違いをまとめて」
+“请从搜索结果中总结性能差异”
 ```
 
-### 詳細例
+### 详细示例
 
 ```bash
-# 複数ソースからの情報収集
+# 从多个来源收集信息
 gemini --prompt "WebSearch: GraphQL best practices 2024 multiple sources"
-「検索結果から複数の信頼できるソースの情報をまとめて」
+“请从搜索结果中总结多个可靠来源的信息”
 
-# 時系列での変化を調査
+# 调查时间序列变化
 gemini --prompt "WebSearch: JavaScript ES2015 ES2016 ES2017 ES2018 ES2019 ES2020 ES2021 ES2022 ES2023 ES2024 features"
-「各バージョンの主要な変更点を時系列でまとめて」
+“请按时间顺序列出每个版本的主要变更点”
 
-# 特定ドメインに絞った検索
+# 限定在特定域内搜索
 gemini --prompt "WebSearch: site:github.com Rust WebAssembly projects stars:>1000"
-「スター数の多い順に 10 個のプロジェクトをリストアップして」
+“请按星标数从多到少列出 10 个项目”
 
-# 最新のセキュリティ情報
+# 最新的安全信息
 gemini --prompt "WebSearch: CVE-2024 Node.js vulnerabilities"
-「見つかった脆弱性の影響と対策をまとめて」
+“请总结发现的漏洞的影响和对策”
 ```
 
-### 禁止事項
+### 禁止事项
 
-- **Claude の組み込み WebSearch ツールの使用は禁止**
-- Web 検索が必要な場合は、必ず `gemini --prompt "WebSearch: ..."` を使用すること
+- **禁止使用 Claude 的内置 WebSearch 工具**
+- 如果需要进行 Web 搜索，请务必使用 `gemini --prompt "WebSearch: ..."`
 
-### 注意事項
+### 注意事项
 
-- **Gemini CLI が利用可能な場合は、必ず `gemini --prompt "WebSearch: ..."` を使用してください**
-- Web 検索結果は常に最新とは限りません
-- 重要な情報は公式ドキュメントや信頼できるソースで確認することをお勧めします
+- **如果 Gemini CLI 可用，请务必使用 `gemini --prompt "WebSearch: ..."`**
+- Web 搜索结果不一定总是最新的
+- 建议在官方文档或可靠来源上确认重要信息

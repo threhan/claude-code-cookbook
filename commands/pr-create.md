@@ -1,249 +1,249 @@
-## PR Create
+## PR 创建
 
-Git 変更分析に基づく自動 PR 作成で効率的な Pull Request ワークフローを実現します。
+通过基于 Git 变更分析的自动 PR 创建，实现高效的 Pull Request 工作流。
 
-### 使い方
+### 使用方法
 
 ```bash
-# 変更分析による自動 PR 作成
-git add . && git commit -m "feat: ユーザー認証機能の実装"
-「変更内容を分析して適切な説明文とラベルで Draft PR を作成してください」
+# 通过变更分析自动创建 PR
+git add . && git commit -m "feat: 实现用户认证功能"
+“请分析变更内容，并使用适当的描述和标签创建 Draft PR”
 
-# 既存テンプレート保持での更新
+# 在保留现有模板的情况下更新
 cp .github/PULL_REQUEST_TEMPLATE.md pr_body.md
-「テンプレート構造を完全に保持して変更内容を補完してください」
+“请完全保留模板结构，并补充变更内容”
 
-# 段階的品質向上
+# 分阶段提高质量
 gh pr ready
-「品質確認完了後、Ready for Review に変更してください」
+“质量确认完成后，请将状态更改为 Ready for Review”
 ```
 
-### 基本例
+### 基本示例
 
 ```bash
-# 1. ブランチ作成とコミット
+# 1. 创建分支并提交
 git checkout main && git pull
 git checkout -b feat-user-profile
-git add . && git commit -m "feat: ユーザー プロフィール機能の実装"
+git add . && git commit -m "feat: 实现用户个人资料功能"
 git push -u origin feat-user-profile
 
-# 2. PR 作成
-「以下の手順で PR を作成してください：
-1. git diff --cached で変更内容を確認
-2. .github/PULL_REQUEST_TEMPLATE.md を使用して説明文を作成
-3. 変更内容から適切なラベルを最大 3 個選択
-4. Draft PR として作成（HTML コメント保持）」
+# 2. 创建 PR
+“请按以下步骤创建 PR：
+1. 使用 git diff --cached 确认变更内容
+2. 使用 .github/PULL_REQUEST_TEMPLATE.md 创建描述
+3. 从变更内容中选择最多 3 个适当的标签
+4. 作为 Draft PR 创建（保留 HTML 注释）”
 
-# 3. CI 確認後に Ready 化
-「CI が通ったら PR を Ready for Review に変更してください」
+# 3. CI 通过后设为 Ready
+“CI 通过后，请将 PR 状态更改为 Ready for Review”
 ```
 
-### 実行手順
+### 执行步骤
 
-#### 1. ブランチ作成
+#### 1. 创建分支
 
 ```bash
-# ガイドラインに従った命名規則: {type}-{subject}
+# 遵循指南的命名规则: {type}-{subject}
 git checkout main
 git pull
 git checkout -b feat-user-authentication
 
-# ブランチ確認（現在のブランチ名を表示）
+# 确认分支（显示当前分支名称）
 git branch --show-current
 ```
 
-#### 2. コミット
+#### 2. 提交
 
 ```bash
-# 変更をステージング
+# 暂存变更
 git add .
 
-# ガイドラインに従ったコミットメッセージ
-git commit -m "feat: ユーザー認証 API の実装"
+# 遵循指南的提交信息
+git commit -m "feat: 实现用户认证 API"
 ```
 
-#### 3. リモートに Push
+#### 3. 推送到远程仓库
 
 ```bash
-# 初回 Push（upstream 設定）
+# 首次推送（设置上游）
 git push -u origin feat-user-authentication
 
-# 2 回目以降
+# 第二次及以后
 git push
 ```
 
-#### 4. 自動分析による Draft PR 作成
+#### 4. 通过自动分析创建 Draft PR
 
-**Step 1: 変更内容の分析**
+**步骤 1: 分析变更内容**
 
 ```bash
-# ファイル変更の取得（ステージ済み変更を確認）
+# 获取文件变更（确认已暂存的变更）
 git diff --cached --name-only
 
-# 内容分析（最大 1000 行）
+# 内容分析（最多 1000 行）
 git diff --cached | head -1000
 ```
 
-**Step 2: 説明文の自動生成**
+**步骤 2: 自动生成描述**
 
 ```bash
-# テンプレート処理の優先順位
-# 1. 既存 PR 説明（完全保持）
+# 模板处理优先级
+# 1. 现有 PR 描述（完全保留）
 # 2. .github/PULL_REQUEST_TEMPLATE.md
-# 3. デフォルトテンプレート
+# 3. 默认模板
 
 cp .github/PULL_REQUEST_TEMPLATE.md pr_body.md
-# HTML コメント・区切り線を保持したまま空セクションのみ補完
+# 在保留 HTML 注释和分隔线的情况下，仅补充空的部分
 ```
 
-**Step 3: ラベルの自動選択**
+**步骤 3: 自动选择标签**
 
 ```bash
-# 利用可能ラベルの取得（非インタラクティブ）
-「.github/labels.yml または GitHub リポジトリから利用可能なラベルを取得して、変更内容に基づいて適切なラベルを自動選択してください」
+# 获取可用标签（非交互式）
+“请从 .github/labels.yml 或 GitHub 仓库获取可用标签，并根据变更内容自动选择适当的标签”
 
-# パターンマッチングによる自動選択（最大 3 個）
-# - ドキュメント: *.md, docs/ → documentation|docs
-# - テスト: test, spec → test|testing
-# - バグ修正: fix|bug → bug|fix
-# - 新機能: feat|feature → feature|enhancement
+# 通过模式匹配自动选择（最多 3 个）
+# - 文档: *.md, docs/ → documentation|docs
+# - 测试: test, spec → test|testing
+# - 错误修复: fix|bug → bug|fix
+# - 新功能: feat|feature → feature|enhancement
 ```
 
-**Step 4: GitHub API での PR 作成（HTML コメント保持）**
+**步骤 4: 使用 GitHub API 创建 PR（保留 HTML 注释）**
 
 ```bash
-# PR 作成
-「以下の情報で Draft PR を作成してください：
-- タイトル: コミットメッセージから自動生成
-- 説明文: .github/PULL_REQUEST_TEMPLATE.md を使用して適切に記入
-- ラベル: 変更内容から自動選択（最大 3 個）
-- ベースブランチ: main
-- HTML コメントは完全に保持」
+# 创建 PR
+“请使用以下信息创建 Draft PR：
+- 标题: 从提交信息自动生成
+- 描述: 使用 .github/PULL_REQUEST_TEMPLATE.md 适当填写
+- 标签: 从变更内容中自动选择（最多 3 个）
+- 基础分支: main
+- 完全保留 HTML 注释”
 ```
 
-**方法 B: GitHub MCP（フォールバック）**
+**方法 B: GitHub MCP（备用）**
 
 ```javascript
-// HTML コメント保持での PR 作成
+// 创建保留 HTML 注释的 PR
 mcp_github_create_pull_request({
   owner: 'organization',
   repo: 'repository',
   base: 'main',
   head: 'feat-user-authentication',
-  title: 'feat: ユーザー認証の実装',
-  body: prBodyContent, // HTML コメントを含む完全な内容
+  title: 'feat: 实现用户认证',
+  body: prBodyContent, // 包含 HTML 注释的完整内容
   draft: true,
   maintainer_can_modify: true,
 });
 ```
 
-### 自動ラベル選択システム
+### 自动标签选择系统
 
-#### ファイルパターンベース判定
+#### 基于文件模式的判断
 
-- **ドキュメント**: `*.md`, `README`, `docs/` → `documentation|docs|doc`
-- **テスト**: `test`, `spec` → `test|testing`
+- **文档**: `*.md`, `README`, `docs/` → `documentation|docs|doc`
+- **测试**: `test`, `spec` → `test|testing`
 - **CI/CD**: `.github/`, `*.yml`, `Dockerfile` → `ci|build|infra|ops`
-- **依存関係**: `package.json`, `pubspec.yaml` → `dependencies|deps`
+- **依赖**: `package.json`, `pubspec.yaml` → `dependencies|deps`
 
-#### 変更内容ベース判定
+#### 基于变更内容的判断
 
-- **バグ修正**: `fix|bug|error|crash|修正` → `bug|fix`
-- **新機能**: `feat|feature|add|implement|新機能|実装` → `feature|enhancement|feat`
-- **リファクタリング**: `refactor|clean|リファクタ` → `refactor|cleanup|clean`
-- **パフォーマンス**: `performance|perf|optimize` → `performance|perf`
-- **セキュリティ**: `security|secure` → `security`
+- **错误修复**: `fix|bug|error|crash|修复` → `bug|fix`
+- **新功能**: `feat|feature|add|implement|新功能|实现` → `feature|enhancement|feat`
+- **重构**: `refactor|clean|リファクタ` → `refactor|cleanup|clean`
+- **性能**: `performance|perf|optimize` → `performance|perf`
+- **安全**: `security|secure` → `security`
 
-#### 制約事項
+#### 限制
 
-- **最大 3 個まで**: 自動選択の上限
-- **既存ラベルのみ**: 新規作成禁止
-- **部分マッチ**: キーワード含有による判定
+- **最多 3 个**: 自动选择的上限
+- **仅限现有标签**: 禁止创建新标签
+- **部分匹配**: 通过包含关键字进行判断
 
-### プロジェクトガイドライン
+### 项目指南
 
-#### 基本姿勢
+#### 基本姿态
 
-1. **必ず Draft で開始**: すべての PR は Draft 状態で作成
-2. **段階的品質向上**: Phase 1（基本実装）→ Phase 2（テスト追加）→ Phase 3（ドキュメント更新）
-3. **適切なラベル**: 最大 3 種類のラベルを必ず付与
-4. **テンプレート使用**: `.github/PULL_REQUEST_TEMPLATE.md` を必ず使用
-5. **日本語スペース**: 日本語と半角英数字間に必ず半角スペース
+1. **始终以 Draft 开始**: 所有 PR 都以 Draft 状态创建
+2. **分阶段提高质量**: 阶段 1（基本实现）→ 阶段 2（添加测试）→ 阶段 3（更新文档）
+3. **适当的标签**: 始终附加最多 3 种标签
+4. **使用模板**: 始终使用 `.github/PULL_REQUEST_TEMPLATE.md`
+5. **中文空格**: 中文和半角英数字之间始终使用半角空格
 
-#### ブランチ命名規則
+#### 分支命名规则
 
 ```text
 {type}-{subject}
 
-例:
+示例:
 - feat-user-profile
 - fix-login-error
 - refactor-api-client
 ```
 
-#### コミットメッセージ
+#### 提交信息
 
 ```text
 {type}: {description}
 
-例:
-- feat: ユーザー認証 API の実装
-- fix: ログイン エラーの修正
-- docs: README の更新
+示例:
+- feat: 实现用户认证 API
+- fix: 修复登录错误
+- docs: 更新 README
 ```
 
-### テンプレート処理システム
+### 模板处理系统
 
-#### 処理優先順位
+#### 处理优先级
 
-1. **既存 PR 説明**: 既に記述されている内容を**完全に踏襲**
-2. **プロジェクトテンプレート**: `.github/PULL_REQUEST_TEMPLATE.md` 構造を維持
-3. **デフォルトテンプレート**: 上記が存在しない場合
+1. **现有 PR 描述**: **完全遵循**已有的内容
+2. **项目模板**: 维持 `.github/PULL_REQUEST_TEMPLATE.md` 的结构
+3. **默认模板**: 如果上述模板不存在
 
-#### 既存内容保持ルール
+#### 现有内容保留规则
 
-- **一文字も変更しない**: 既に記述されている内容
-- **空セクションのみ補完**: プレースホルダー部分を変更内容で埋める
-- **機能的コメント保持**: `<!-- Copilot review rule -->` などを維持
-- **HTML コメント保持**: `<!-- ... -->` を完全に保持
-- **区切り線保持**: `---` などの構造を維持
+- **一字不改**: 已有的内容
+- **仅补充空的部分**: 用变更内容填充占位符部分
+- **保留功能性注释**: 维持 `<!-- Copilot review rule -->` 等
+- **保留 HTML 注释**: 完全保留 `<!-- ... -->`
+- **保留分隔线**: 维持 `---` 等结构
 
-#### HTML コメント保持の対処法
+#### HTML 注释保留的处理方法
 
-**重要**: GitHub CLI (`gh pr edit`) は HTML コメントを自動エスケープし、シェル処理で `EOF < /dev/null` などの不正な文字列が混入する場合があります。
+**重要**: GitHub CLI (`gh pr edit`) 会自动转义 HTML 注释，并且在 shell 处理中可能会混入 `EOF < /dev/null` 等无效字符串。
 
-**根本的解決策**:
+**根本解决方案**:
 
-1. **GitHub API の --field オプション使用**: 適切なエスケープ処理で HTML コメント保持
-2. **テンプレート処理の簡素化**: 複雑なパイプ処理やリダイレクトを避ける
-3. **完全保持アプローチ**: HTML コメント削除処理を廃止し、テンプレートを完全保持
+1. **使用 GitHub API 的 --field 选项**: 通过适当的转义处理保留 HTML 注释
+2. **简化模板处理**: 避免复杂的管道处理或重定向
+3. **完全保留方法**: 废除 HTML 注释删除处理，完全保留模板
 
-### レビューコメント対応
+### 审查评论处理
 
 ```bash
-# 変更後の再コミット
+# 变更后重新提交
 git add .
-git commit -m "fix: レビュー フィードバックに基づく修正"
+git commit -m "fix: 根据审查反馈进行修复"
 git push
 ```
 
-### 注意事項
+### 注意事项
 
-#### HTML コメント保持の重要性
+#### HTML 注释保留的重要性
 
-- **GitHub CLI 制限**: `gh pr edit` は HTML コメントをエスケープ、不正文字列混入
-- **根本的回避策**: GitHub API の `--field` オプションで適切なエスケープ処理
-- **テンプレート完全保持**: HTML コメント削除処理を廃止し、構造を完全維持
+- **GitHub CLI 限制**: `gh pr edit` 会转义 HTML 注释，混入无效字符串
+- **根本规避方法**: 使用 GitHub API 的 `--field` 选项进行适当的转义处理
+- **完全保留模板**: 废除 HTML 注释删除处理，完全维持结构
 
-#### 自動化の制約
+#### 自动化的限制
 
-- **新規ラベル禁止**: `.github/labels.yml` 定義外のラベル作成不可
-- **最大 3 ラベル**: 自動選択の上限
-- **既存内容優先**: 手動で記述された内容は一切変更しない
+- **禁止新标签**: 不可创建 `.github/labels.yml` 定义之外的标签
+- **最多 3 个标签**: 自动选择的上限
+- **现有内容优先**: 不会更改任何手动编写的内容
 
-#### 段階的品質向上
+#### 分阶段提高质量
 
-- **Draft 必須**: すべての PR は Draft で開始
-- **CI 確認**: `gh pr checks` で状態確認
-- **Ready 移行**: 品質確認完了後に `gh pr ready`
-- **テンプレート完全遵守**: プロジェクト固有の構造を維持
+- **必须是 Draft**: 所有 PR 都以 Draft 开始
+- **CI 确认**: 使用 `gh pr checks` 确认状态
+- **转为 Ready**: 质量确认完成后使用 `gh pr ready`
+- **完全遵守模板**: 维持项目特有的结构

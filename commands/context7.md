@@ -1,50 +1,50 @@
 ## Context7
 
-技術ドキュメントを MCP の Context7 で検索します。
+在 MCP 的 Context7 中搜索技术文档。
 
-### 使い方
-
-```bash
-# Claude に依頼する形式
-「context7 で [検索キーワード] について検索して」
-```
-
-### 基本例
+### 使用方法
 
 ```bash
-# React hooks の調査
-「context7 で React hooks について検索して」
-
-# エラー解決方法の検索
-「context7 で TypeScript の型エラーについて調べて」
+# 请求 Claude 的格式
+“请在 context7 中搜索 [搜索关键词]”
 ```
 
-### Claude との連携
+### 基本示例
 
 ```bash
-# 技術調査の依頼
-「context7 で Rust の所有権システムについて調べて、初心者向けに解説して」
+# 调查 React hooks
+“请在 context7 中搜索 React hooks”
 
-# エラー解決の依頼
-「context7 で Python の ImportError の一般的な原因と解決方法を検索して」
-
-# ベストプラクティスの確認
-「context7 で React のパフォーマンス最適化のベストプラクティスを探して」
+# 搜索错误解决方法
+“请在 context7 中调查 TypeScript 的类型错误”
 ```
 
-### 詳細例
+### 与 Claude 协作
 
 ```bash
-# 複数の観点から調査
-「context7 で GraphQL について以下の観点で調べて：
-1. 基本的な概念と REST API との違い
-2. 実装方法とベストプラクティス
-3. よくある問題と解決方法」
+# 请求技术调查
+“请在 context7 中调查 Rust 的所有权系统，并为初学者进行解释”
 
-# 特定のバージョンや環境での調査
-「context7 で Next.js 14 の新機能について検索して、App Router の使い方を中心に説明して」
+# 请求错误解决方法
+“请在 context7 中搜索 Python ImportError 的常见原因和解决方法”
+
+# 确认最佳实践
+“请在 context7 中寻找 React 性能优化的最佳实践”
 ```
 
-### 注意事項
+### 详细示例
 
-Context7 で情報が見つからない場合は、Claude が自動的に Web 検索など他の方法を提案します。
+```bash
+# 从多个角度进行调查
+“请在 context7 中从以下角度调查 GraphQL：
+1. 基本概念以及与 REST API 的区别
+2. 实现方法和最佳实践
+3. 常见问题和解决方法”
+
+# 在特定版本或环境中进行调查
+“请在 context7 中搜索 Next.js 14 的新功能，并重点说明 App Router 的使用方法”
+```
+
+### 注意事项
+
+如果在 Context7 中找不到信息，Claude 会自动建议使用 Web 搜索等其他方法。

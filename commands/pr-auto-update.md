@@ -1,155 +1,155 @@
-## PR Auto Update
+## PR 自动更新
 
-## 概要
+## 概述
 
-Pull Request の説明とラベルを自動的に更新するコマンドです。Git の変更内容を分析して、適切な説明文とラベルを生成・設定します。
+这是一个自动更新 Pull Request 描述和标签的命令。它会分析 Git 的变更内容，并生成、设置适当的描述和标签。
 
-## 使い方
+## 使用方法
 
 ```bash
-/pr-auto-update [オプション] [PR 番号]
+/pr-auto-update [选项] [PR 编号]
 ```
 
-### オプション
+### 选项
 
-- `--pr <番号>` : 対象の PR 番号を指定（省略時は現在のブランチから自動検出）
-- `--description-only` : 説明文のみ更新（ラベルは変更しない）
-- `--labels-only` : ラベルのみ更新（説明文は変更しない）
-- `--dry-run` : 実際の更新は行わず、生成される内容のみ表示
-- `--lang <言語>` : 言語を指定（ja, en）
+- `--pr <编号>` : 指定目标 PR 编号（如果省略，则从当前分支自动检测）
+- `--description-only` : 仅更新描述（不更改标签）
+- `--labels-only` : 仅更新标签（不更改描述）
+- `--dry-run` : 不执行实际更新，仅显示将要生成的内容
+- `--lang <语言>` : 指定语言（zh, en）
 
-### 基本例
+### 基本示例
 
 ```bash
-# 現在のブランチの PR を自動更新
+# 自动更新当前分支的 PR
 /pr-auto-update
 
-# 特定の PR を更新
+# 更新特定的 PR
 /pr-auto-update --pr 1234
 
-# 説明文のみ更新
+# 仅更新描述
 /pr-auto-update --description-only
 
-# ドライランで確認
+# 使用 dry-run 进行确认
 /pr-auto-update --dry-run
 ```
 
-## 機能詳細
+## 功能详情
 
-### 1. PR の自動検出
+### 1. 自动检测 PR
 
-現在のブランチから対応する PR を自動検出：
+从当前分支自动检测对应的 PR：
 
 ```bash
-# ブランチから PR を検索
+# 从分支搜索 PR
 gh pr list --head $(git branch --show-current) --json number,title,url
 ```
 
-### 2. 変更内容の分析
+### 2. 分析变更内容
 
-以下の情報を収集・分析：
+收集并分析以下信息：
 
-- **ファイル変更**: 追加・削除・変更されたファイル
-- **コード分析**: import 文、関数定義、クラス定義の変更
-- **テスト**: テストファイルの有無と内容
-- **ドキュメント**: README、docs の更新
-- **設定**: package.json、pubspec.yaml、設定ファイルの変更
-- **CI/CD**: GitHub Actions、workflow の変更
+- **文件变更**: 添加、删除、修改的文件
+- **代码分析**: import 语句、函数定义、类定义的变更
+- **测试**: 测试文件的有无和内容
+- **文档**: README、docs 的更新
+- **配置**: package.json、pubspec.yaml、配置文件的变更
+- **CI/CD**: GitHub Actions、workflow 的变更
 
-### 3. 説明文の自動生成
+### 3. 自动生成描述
 
-#### テンプレート処理の優先順位
+#### 模板处理优先级
 
-1. **既存の PR 説明**: 既に記述されている内容を**完全に踏襲**
-2. **プロジェクトテンプレート**: `.github/PULL_REQUEST_TEMPLATE.md` から構造を取得
-3. **デフォルトテンプレート**: 上記が存在しない場合のフォールバック
+1. **现有的 PR 描述**: **完全沿用**已经写好的内容
+2. **项目模板**: 从 `.github/PULL_REQUEST_TEMPLATE.md` 获取结构
+3. **默认模板**: 如果以上都不存在，则使用回退模板
 
-#### 既存内容の保持ルール
+#### 现有内容保留规则
 
-**重要**: 既存の内容は変更しない
+**重要**: 不更改现有内容
 
-- 書かれているセクションは保持
-- 空のセクションのみ補完
-- 機能的なコメント（Copilot review rule など）は保持
+- 保留已填写的章节
+- 仅补充空的章节
+- 保留功能性注释（如 Copilot review rule）
 
-#### プロジェクトテンプレートの使用
+#### 使用项目模板
 
 ```bash
-# .github/PULL_REQUEST_TEMPLATE.md の構造を解析
+# 解析 .github/PULL_REQUEST_TEMPLATE.md 的结构
 parse_template_structure() {
   local template_file="$1"
   
   if [ -f "$template_file" ]; then
-    # セクション構造を抽出
+    # 提取章节结构
     grep -E '^##|^###' "$template_file"
     
-    # コメントプレースホルダーを特定
+    # 识别注释占位符
     grep -E '<!--.*-->' "$template_file"
     
-    # 既存のテンプレート構造を完全に踏襲
+    # 完全沿用现有的模板结构
     cat "$template_file"
   fi
 }
 ```
 
-### 4. ラベルの自動設定
+### 4. 自动设置标签
 
-#### ラベル取得の仕組み
+#### 标签获取机制
 
-**優先順位**:
+**优先级**:
 
-1. **`.github/labels.yml`**: プロジェクト固有のラベル定義から取得
-2. **GitHub API**: `gh api repos/{OWNER}/{REPO}/labels --jq '.[].name'` で既存ラベルを取得
+1. **`.github/labels.yml`**: 从项目特定的标签定义中获取
+2. **GitHub API**: 使用 `gh api repos/{OWNER}/{REPO}/labels --jq '.[].name'` 获取现有标签
 
-#### 自動判定ルール
+#### 自动判断规则
 
-**ファイルパターンベース**:
+**基于文件模式**:
 
-- ドキュメント: `*.md`, `README`, `docs/` → `documentation|docs|doc` を含むラベル
-- テスト: `test`, `spec` → `test|testing` を含むラベル  
-- CI/CD: `.github/`, `*.yml`, `Dockerfile` → `ci|build|infra|ops` を含むラベル
-- 依存関係: `package.json`, `pubspec.yaml`, `requirements.txt` → `dependencies|deps` を含むラベル
+- 文档: `*.md`, `README`, `docs/` → 包含 `documentation|docs|doc` 的标签
+- 测试: `test`, `spec` → 包含 `test|testing` 的标签
+- CI/CD: `.github/`, `*.yml`, `Dockerfile` → 包含 `ci|build|infra|ops` 的标签
+- 依赖: `package.json`, `pubspec.yaml`, `requirements.txt` → 包含 `dependencies|deps` 的标签
 
-**変更内容ベース**:
+**基于变更内容**:
 
-- バグ修正: `fix|bug|error|crash|修正` → `bug|fix` を含むラベル
-- 新機能: `feat|feature|add|implement|新機能|実装` → `feature|enhancement|feat` を含むラベル
-- リファクタリング: `refactor|clean|リファクタ` → `refactor|cleanup|clean` を含むラベル
-- パフォーマンス: `performance|perf|optimize|パフォーマンス` → `performance|perf` を含むラベル
-- セキュリティ: `security|secure|セキュリティ` → `security` を含むラベル
+- Bug 修复: `fix|bug|error|crash|修复` → 包含 `bug|fix` 的标签
+- 新功能: `feat|feature|add|implement|新功能|实现` → 包含 `feature|enhancement|feat` 的标签
+- 重构: `refactor|clean|重构` → 包含 `refactor|cleanup|clean` 的标签
+- 性能: `performance|perf|optimize|性能` → 包含 `performance|perf` 的标签
+- 安全: `security|secure|安全` → 包含 `security` 的标签
 
-#### 制約
+#### 限制
 
-- **最大 3 個まで**: 自動選択されるラベル数の上限
-- **既存ラベルのみ**: 新しいラベルの作成は禁止
-- **部分マッチ**: ラベル名にキーワードが含まれているかで判定
+- **最多 3 个**: 自动选择的标签数量上限
+- **仅限现有标签**: 禁止创建新标签
+- **部分匹配**: 根据标签名是否包含关键字来判断
 
-#### 実際の使用例
+#### 实际使用示例
 
-**`.github/labels.yml` が存在する場合**:
+**如果存在 `.github/labels.yml`**:
 
 ```bash
-# ラベル定義から自動取得
-grep "^- name:" .github/labels.yml | sed "s/^- name: '\?\([^']*\)'\?/\1/"
+# 从标签定义中自动获取
+grep "^- name:" .github/labels.yml | sed "s/^- name: '\?\([^']*\)'\?/\\1/"
 
-# 例: プロジェクト固有のラベル体系を使用
+# 示例: 使用项目特定的标签体系
 ```
 
-**GitHub API から取得する場合**:
+**如果从 GitHub API 获取**:
 
 ```bash
-# 既存ラベルの一覧取得
+# 获取现有标签列表
 gh api repos/{OWNER}/{REPO}/labels --jq '.[].name'
 
-# 例: bug, enhancement, documentation などの標準的なラベルを使用
+# 示例: 使用 bug, enhancement, documentation 等标准标签
 ```
 
-### 5. 実行フロー
+### 5. 执行流程
 
 ```bash
 #!/bin/bash
 
-# 1. PR の検出・取得
+# 1. 检测/获取 PR
 detect_pr() {
   if [ -n "$PR_NUMBER" ]; then
     echo $PR_NUMBER
@@ -158,30 +158,30 @@ detect_pr() {
   fi
 }
 
-# 2. 変更内容の分析
+# 2. 分析变更内容
 analyze_changes() {
   local pr_number=$1
   
-  # ファイル変更の取得
+  # 获取文件变更
   gh pr diff $pr_number --name-only
   
   # 内容分析
   gh pr diff $pr_number | head -1000
 }
 
-# 3. 説明文の生成
+# 3. 生成描述
 generate_description() {
   local pr_number=$1
   local changes=$2
   
-  # 現在の PR 説明を取得
+  # 获取当前的 PR 描述
   local current_body=$(gh pr view $pr_number --json body --jq -r .body)
   
-  # 既存内容があればそのまま使用
+  # 如果有现有内容，则直接使用
   if [ -n "$current_body" ]; then
     echo "$current_body"
   else
-    # テンプレートから新規生成
+    # 从模板新建
     local template_file=".github/PULL_REQUEST_TEMPLATE.md"
     if [ -f "$template_file" ]; then
       generate_from_template "$(cat "$template_file")" "$changes"
@@ -191,35 +191,35 @@ generate_description() {
   fi
 }
 
-# テンプレートからの生成
+# 从模板生成
 generate_from_template() {
   local template="$1"
   local changes="$2"
   
   if [ -n "$template" ]; then
-    # テンプレートをそのまま使用（HTML コメント保持）
+    # 直接使用模板（保留 HTML 注释）
     echo "$template"
   else
-    # デフォルトフォーマットで生成
+    # 使用默认格式生成
     echo "## What does this change?"
     echo ""
     echo "$changes"
   fi
 }
 
-# 4. ラベルの決定
+# 4. 决定标签
 determine_labels() {
   local changes=$1
   local file_list=$2
   local pr_number=$3
   
-  # 利用可能なラベルを取得
+  # 获取可用标签
   local available_labels=()
   if [ -f ".github/labels.yml" ]; then
-    # labels.yml からラベル名を抽出
-    available_labels=($(grep "^- name:" .github/labels.yml | sed "s/^- name: '\?\([^']*\)'\?/\1/"))
+    # 从 labels.yml 提取标签名
+    available_labels=($(grep "^- name:" .github/labels.yml | sed "s/^- name: '\?\([^']*\)'\?/\\1/" ))
   else
-    # GitHub API からラベルを取得
+    # 从 GitHub API 获取标签
     local repo_info=$(gh repo view --json owner,name)
     local owner=$(echo "$repo_info" | jq -r .owner.login)
     local repo=$(echo "$repo_info" | jq -r .name)
@@ -228,21 +228,21 @@ determine_labels() {
   
   local suggested_labels=()
   
-  # 汎用的なパターンマッチング
+  # 通用模式匹配
   analyze_change_patterns "$file_list" "$changes" available_labels suggested_labels
   
-  # 最大 3 個に制限
+  # 限制为最多 3 个
   echo "${suggested_labels[@]:0:3}"
 }
 
-# 変更パターンからラベルを決定
+# 从变更模式决定标签
 analyze_change_patterns() {
   local file_list="$1"
   local changes="$2"
   local -n available_ref=$3
   local -n suggested_ref=$4
   
-  # ファイルタイプによる判定
+  # 根据文件类型判断
   if echo "$file_list" | grep -q "\.md$\|README\|docs/"; then
     add_matching_label "documentation\|docs\|doc" available_ref suggested_ref
   fi
@@ -251,31 +251,31 @@ analyze_change_patterns() {
     add_matching_label "test\|testing" available_ref suggested_ref
   fi
   
-  # 変更内容による判定
-  if echo "$changes" | grep -iq "fix\|bug\|error\|crash\|修正"; then
+  # 根据变更内容判断
+  if echo "$changes" | grep -iq "fix\|bug\|error\|crash\|修复"; then
     add_matching_label "bug\|fix" available_ref suggested_ref
   fi
   
-  if echo "$changes" | grep -iq "feat\|feature\|add\|implement\|新機能\|実装"; then
+  if echo "$changes" | grep -iq "feat\|feature\|add\|implement\|新功能\|实现"; then
     add_matching_label "feature\|enhancement\|feat" available_ref suggested_ref
   fi
 }
 
-# マッチするラベルを追加
+# 添加匹配的标签
 add_matching_label() {
   local pattern="$1"
   local -n available_ref=$2
   local -n suggested_ref=$3
   
-  # すでに 3 個ある場合はスキップ
+  # 如果已有 3 个，则跳过
   if [ ${#suggested_ref[@]} -ge 3 ]; then
     return
   fi
   
-  # パターンにマッチする最初のラベルを追加
+  # 添加第一个匹配模式的标签
   for available_label in "${available_ref[@]}"; do
     if echo "$available_label" | grep -iq "$pattern"; then
-      # 重複チェック
+      # 检查重复
       local already_exists=false
       for existing in "${suggested_ref[@]}"; do
         if [ "$existing" = "$available_label" ]; then
@@ -292,12 +292,12 @@ add_matching_label() {
   done
 }
 
-# 旧関数の互換性のため残しておく
+# 为保持旧函数兼容性而保留
 find_and_add_label() {
   add_matching_label "$@"
 }
 
-# 5. PR の更新
+# 5. 更新 PR
 update_pr() {
   local pr_number=$1
   local description="$2"
@@ -309,20 +309,20 @@ update_pr() {
     echo "$description"
     echo "Labels: $labels"
   else
-    # リポジトリ情報を取得
+    # 获取仓库信息
     local repo_info=$(gh repo view --json owner,name)
     local owner=$(echo "$repo_info" | jq -r .owner.login)
     local repo=$(echo "$repo_info" | jq -r .name)
     
-    # GitHub API を使用して本文を更新（HTML コメント保持）
-    # JSON エスケープを適切に処理
+    # 使用 GitHub API 更新正文（保留 HTML 注释）
+    # 妥善处理 JSON 转义
     local escaped_body=$(echo "$description" | jq -R -s .)
     gh api \
       --method PATCH \
       "/repos/$owner/$repo/pulls/$pr_number" \
       --field body="$description"
     
-    # ラベルは通常の gh コマンドで問題なし
+    # 标签使用常规 gh 命令即可
     if [ -n "$labels" ]; then
       gh pr edit $pr_number --add-label "$labels"
     fi
@@ -330,131 +330,131 @@ update_pr() {
 }
 ```
 
-## 設定ファイル（今後の拡張用）
+## 配置文件（供未来扩展）
 
 `~/.claude/pr-auto-update.config`:
 
 ```json
 {
-  "language": "ja",
+  "language": "zh",
   "max_labels": 3
 }
 ```
 
-## よくあるパターン
+## 常见模式
 
-### Flutter プロジェクト
-
-```markdown
-## What does this change?
-
-{機能名}を実装しました。ユーザーの{課題}を解決します。
-
-### 主な変更内容
-
-- **UI 実装**: {画面名}を新規作成
-- **状態管理**: Riverpod プロバイダーを追加
-- **API 統合**: GraphQL クエリ・ミューテーションを実装
-- **テスト**: ウィジェットテスト・ユニットテストを追加
-
-### 技術仕様
-
-- **アーキテクチャ**: {使用パターン}
-- **依存関係**: {新規追加したパッケージ}
-- **パフォーマンス**: {最適化内容}
-```
-
-### Node.js プロジェクト
+### Flutter 项目
 
 ```markdown
 ## What does this change?
 
-{API 名}エンドポイントを実装しました。{ユースケース}に対応します。
+实现了{功能名}。解决了用户的{问题}。
 
-### 主な変更内容
+### 主要变更内容
 
-- **API 実装**: {エンドポイント}を新規作成
-- **バリデーション**: リクエスト検証ロジックを追加
-- **データベース**: {テーブル名}への操作を実装
-- **テスト**: 統合テスト・ユニットテストを追加
+- **UI 实现**: 新建{画面名}
+- **状态管理**: 添加 Riverpod provider
+- **API 集成**: 实现 GraphQL 查询/变更
+- **测试**: 添加小部件测试/单元测试
 
-### セキュリティ
+### 技术规格
 
-- **認証**: JWT トークン検証
-- **認可**: ロールベースアクセス制御
-- **入力検証**: SQL インジェクション対策
+- **架构**: {使用模式}
+- **依赖**: {新添加的包}
+- **性能**: {优化内容}
 ```
 
-### CI/CD 改善
+### Node.js 项目
 
 ```markdown
 ## What does this change?
 
-GitHub Actions ワークフローを改善しました。{効果}を実現します。
+实现了{API 名}端点。对应{用例}。
 
-### 改善内容
+### 主要变更内容
 
-- **パフォーマンス**: ビルド時間を{時間}短縮
-- **信頼性**: エラーハンドリングを強化
-- **セキュリティ**: シークレット管理を改善
+- **API 实现**: 新建{端点}
+- **验证**: 添加请求验证逻辑
+- **数据库**: 实现对{表名}的操作
+- **测试**: 添加集成测试/单元测试
 
-### 技術詳細
+### 安全
 
-- **並列化**: {ジョブ名}を並列実行
-- **キャッシュ**: {キャッシュ対象}のキャッシュ戦略を最適化
-- **モニタリング**: {メトリクス}の監視を追加
+- **认证**: JWT 令牌验证
+- **授权**: 基于角色的访问控制
+- **输入验证**: SQL 注入对策
 ```
 
-## 注意事項
+### CI/CD 改进
 
-1. **既存内容の完全保持**:
-   - 既に記述されている内容は**一文字も変更しない**
-   - 空のコメント部分とプレースホルダーのみ補完
-   - ユーザーが意図的に書いた内容を尊重
+```markdown
+## What does this change?
 
-2. **テンプレート優先順位**:
-   - 既存の PR 説明 > `.github/PULL_REQUEST_TEMPLATE.md` > デフォルト
-   - プロジェクト固有のテンプレート構造を完全踏襲
+改进了 GitHub Actions 工作流。实现了{效果}。
 
-3. **ラベル制約**:
-   - `.github/labels.yml` が存在すれば優先使用
-   - 存在しない場合は GitHub API から既存ラベルを取得
-   - 新しいラベルの作成は禁止
-   - 最大 3 個まで自動選択
+### 改进内容
 
-4. **安全な更新**:
-   - `--dry-run` で事前確認を推奨
-   - 機密情報を含む変更の場合は警告表示
-   - バックアップとして元の説明を保存
+- **性能**: 构建时间缩短{时间}
+- **可靠性**: 加强了错误处理
+- **安全**: 改进了密钥管理
 
-5. **一貫性の維持**:
-   - プロジェクトの既存 PR スタイルに合わせる
-   - 言語（日本語/英語）の統一
-   - ラベリング規則の継承
+### 技术细节
 
-## トラブルシューティング
+- **并行化**: 并行执行{作业名}
+- **缓存**: 优化了{缓存对象}的缓存策略
+- **监控**: 添加了对{指标}的监控
+```
 
-### よくある問題
+## 注意事项
 
-1. **PR が見つからない**: ブランチ名と PR の関連付けを確認
-2. **権限エラー**: GitHub CLI の認証状態を確認
-3. **ラベルが設定できない**: リポジトリの権限を確認
-4. **HTML コメントがエスケープされる**: GitHub CLI の仕様により `<!-- -->` が `&lt;!-- --&gt;` に変換される
+1. **完全保留现有内容**:
+   - **一字不改**已经写好的内容
+   - 仅补充空的注释部分和占位符
+   - 尊重用户有意编写的内容
 
-### GitHub CLI の HTML コメントエスケープ問題
+2. **模板优先级**:
+   - 现有的 PR 描述 > `.github/PULL_REQUEST_TEMPLATE.md` > 默认
+   - 完全沿用项目特定的模板结构
 
-**重要**: GitHub CLI (`gh pr edit`) は HTML コメントを自動エスケープします。また、シェルのリダイレクト処理で `EOF < /dev/null` などの不正な文字列が混入する場合があります。
+3. **标签约束**:
+   - 如果存在 `.github/labels.yml`，则优先使用
+   - 如果不存在，则从 GitHub API 获取现有标签
+   - 禁止创建新标签
+   - 最多自动选择 3 个
 
-#### 根本的解決策
+4. **安全更新**:
+   - 推荐使用 `--dry-run` 进行预先确认
+   - 如果变更包含机密信息，则显示警告
+   - 保存原始描述作为备份
 
-1. **GitHub API の --field オプション使用**: `--field` を使用して適切なエスケープ処理
-2. **シェル処理の簡素化**: 複雑なリダイレクトやパイプ処理を避ける
-3. **テンプレート処理の単純化**: HTML コメント除去処理を廃止し、完全保持
-4. **JSON エスケープの適切な処理**: 特殊文字を正しく処理
+5. **保持一致性**:
+   - 与项目现有的 PR 风格保持一致
+   - 统一语言（中文/英文）
+   - 继承标签规则
 
-### デバッグオプション
+## 故障排除
+
+### 常见问题
+
+1. **找不到 PR**: 确认分支名和 PR 的关联
+2. **权限错误**: 确认 GitHub CLI 的认证状态
+3. **无法设置标签**: 确认仓库的权限
+4. **HTML 注释被转义**: 这是 GitHub CLI 的特性，`<!-- -->` 会被转换为 `&lt;!-- --&gt;`
+
+### GitHub CLI 的 HTML 注释转义问题
+
+**重要**: GitHub CLI (`gh pr edit`) 会自动转义 HTML 注释。此外，shell 的重定向处理可能会混入 `EOF < /dev/null` 等无效字符串。
+
+#### 根本解决方案
+
+1. **使用 GitHub API 的 --field 选项**: 使用 `--field` 进行适当的转义处理
+2. **简化 shell 处理**: 避免复杂的重定向或管道处理
+3. **简化模板处理**: 废除 HTML 注释移除处理，完全保留
+4. **妥善处理 JSON 转义**: 正确处理特殊字符
+
+### 调试选项
 
 ```bash
-# 詳細ログ出力（実装時に追加）
+# 输出详细日志（实现时添加）
 /pr-auto-update --verbose
 ```

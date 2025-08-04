@@ -1,288 +1,288 @@
-## Semantic Commit
+## 语义化提交
 
-大きな変更を意味のある最小単位に分割して、セマンティックなコミットメッセージと共に順次コミットします。外部ツールに依存せず、git 標準コマンドのみを使用します。
+将大的变更分解为有意义的最小单元，并使用语义化的提交信息依次提交。不依赖外部工具，仅使用 git 标准命令。
 
-### 使い方
+### 使用方法
 
 ```bash
-/semantic-commit [オプション]
+/semantic-commit [选项]
 ```
 
-### オプション
+### 选项
 
-- `--dry-run` : 実際のコミットは行わず、提案されるコミット分割のみを表示
-- `--lang <言語>` : コミットメッセージの言語を強制指定（en, ja）
-- `--max-commits <数>` : 最大コミット数を指定（デフォルト: 10）
+- `--dry-run` : 不执行实际提交，仅显示建议的提交拆分
+- `--lang <语言>` : 强制指定提交信息的语言（en, zh）
+- `--max-commits <数量>` : 指定最大提交数（默认为 10）
 
-### 基本例
+### 基本示例
 
 ```bash
-# 現在の変更を分析して、論理的な単位でコミット
+# 分析当前变更并按逻辑单元提交
 /semantic-commit
 
-# 分割案のみを確認（実際のコミットなし）
+# 仅确认拆分方案（不实际提交）
 /semantic-commit --dry-run
 
-# 英語でコミットメッセージを生成
+# 生成英文提交信息
 /semantic-commit --lang en
 
-# 最大 5 個のコミットに分割
+# 最多拆分为 5 个提交
 /semantic-commit --max-commits 5
 ```
 
-### 動作フロー
+### 工作流程
 
-1. **変更分析**: `git diff HEAD` で全変更を取得
-2. **ファイル分類**: 変更されたファイルを論理的にグループ化
-3. **コミット提案**: 各グループに対してセマンティックなコミットメッセージを生成
-4. **順次実行**: ユーザー確認後、各グループを順次コミット
+1. **变更分析**: 使用 `git diff HEAD` 获取所有变更
+2. **文件分类**: 将变更的文件按逻辑分组
+3. **提交建议**: 为每个组生成语义化的提交信息
+4. **依次执行**: 用户确认后，依次提交每个组
 
-### 変更分割の核心機能
+### 变更拆分的核心功能
 
-#### 「大きな変更」の検出
+#### “大变更”的检测
 
-以下の条件で大きな変更として検出：
+在以下条件下检测为大变更：
 
-1. **変更ファイル数**: 5 ファイル以上の変更
-2. **変更行数**: 100 行以上の変更
-3. **複数機能**: 2 つ以上の機能領域にまたがる変更
-4. **混在パターン**: feat + fix + docs が混在
+1. **变更文件数**: 变更文件超过 5 个
+2. **变更行数**: 变更行数超过 100 行
+3. **多功能**: 变更涉及 2 个以上的功能领域
+4. **混合模式**: feat + fix + docs 混合存在
 
 ```bash
-# 変更規模の分析
+# 变更规模分析
 CHANGED_FILES=$(git diff HEAD --name-only | wc -l)
 CHANGED_LINES=$(git diff HEAD --stat | tail -1 | grep -o '[0-9]\+ insertions\|[0-9]\+ deletions' | awk '{sum+=$1} END {print sum}')
 
 if [ $CHANGED_FILES -ge 5 ] || [ $CHANGED_LINES -ge 100 ]; then
-  echo "大きな変更を検出: 分割を推奨"
+  echo "检测到大变更：建议拆分"
 fi
 ```
 
-#### 「意味のある最小単位」への分割戦略
+#### “有意义的最小单元”拆分策略
 
-##### 1. 機能境界による分割
+##### 1. 按功能边界拆分
 
 ```bash
-# ディレクトリ構造から機能単位を特定
+# 从目录结构中识别功能单元
 git diff HEAD --name-only | cut -d'/' -f1-2 | sort | uniq
-# → src/auth, src/api, components/ui など
+# → src/auth, src/api, components/ui 等
 ```
 
-##### 2. 変更種別による分離
+##### 2. 按变更类型分离
 
 ```bash
-# 新規ファイル vs 既存ファイル修正
-git diff HEAD --name-status | grep '^A' # 新規ファイル
-git diff HEAD --name-status | grep '^M' # 修正ファイル
-git diff HEAD --name-status | grep '^D' # 削除ファイル
+# 新文件 vs 现有文件修改
+git diff HEAD --name-status | grep '^A' # 新文件
+git diff HEAD --name-status | grep '^M' # 修改的文件
+git diff HEAD --name-status | grep '^D' # 删除的文件
 ```
 
-##### 3. 依存関係の分析
+##### 3. 依赖关系分析
 
 ```bash
-# インポート関係の変更を検出
+# 检测导入关系的变更
 git diff HEAD | grep -E '^[+-].*import|^[+-].*require' | \
 cut -d' ' -f2- | sort | uniq
 ```
 
-#### ファイル単位の詳細分析
+#### 文件级详细分析
 
 ```bash
-# 変更されたファイル一覧を取得
+# 获取变更的文件列表
 git diff HEAD --name-only
 
-# 各ファイルの変更内容を個別に分析
+# 单独分析每个文件的变更内容
 git diff HEAD -- <file>
 
-# ファイルの変更タイプを判定
+# 判断文件的变更类型
 git diff HEAD --name-status | while read status file; do
   case $status in
-    A) echo "$file: 新規作成" ;;
-    M) echo "$file: 修正" ;;
-    D) echo "$file: 削除" ;;
-    R*) echo "$file: リネーム" ;;
+    A) echo "$file: 新建" ;; 
+    M) echo "$file: 修改" ;; 
+    D) echo "$file: 删除" ;; 
+    R*) echo "$file: 重命名" ;; 
   esac
 done
 ```
 
-#### 論理的グループ化の基準
+#### 逻辑分组标准
 
-1. **機能単位**: 同一機能に関連するファイル
-   - `src/auth/` 配下のファイル → 認証機能
-   - `components/` 配下のファイル → UI コンポーネント
+1. **功能单元**: 与同一功能相关的文件
+   - `src/auth/` 下的文件 → 认证功能
+   - `components/` 下的文件 → UI 组件
 
-2. **変更種別**: 同じ種類の変更
-   - テストファイルのみ → `test:`
-   - ドキュメントのみ → `docs:`
-   - 設定ファイルのみ → `chore:`
+2. **变更类型**: 相同类型的变更
+   - 仅测试文件 → `test:`
+   - 仅文档 → `docs:`
+   - 仅配置文件 → `chore:`
 
-3. **依存関係**: 相互に関連するファイル
-   - モデル + マイグレーション
-   - コンポーネント + スタイル
+3. **依赖关系**: 相互关联的文件
+   - 模型 + 迁移
+   - 组件 + 样式
 
-4. **変更規模**: 適切なコミットサイズの維持
-   - 1 コミットあたり 10 ファイル以下
-   - 関連性の高いファイルをグループ化
+4. **变更规模**: 保持适当的提交大小
+   - 每个提交不超过 10 个文件
+   - 将高度相关的文件分组
 
-### 出力例
+### 输出示例
 
 ```bash
 $ /semantic-commit
 
-変更分析中...
+正在分析变更...
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-検出された変更:
-• src/auth/login.ts (修正)
-• src/auth/register.ts (新規)
-• src/auth/types.ts (修正)
-• tests/auth.test.ts (新規)
-• docs/authentication.md (新規)
+检测到的变更:
+• src/auth/login.ts (修改)
+• src/auth/register.ts (新建)
+• src/auth/types.ts (修改)
+• tests/auth.test.ts (新建)
+• docs/authentication.md (新建)
 
-提案されるコミット分割:
+建议的提交拆分:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-コミット 1/3
+提交 1/3
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-メッセージ: feat: implement user registration and login system
-含まれるファイル:
+信息: feat: implement user registration and login system
+包含的文件:
   • src/auth/login.ts
   • src/auth/register.ts  
   • src/auth/types.ts
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-コミット 2/3
+提交 2/3
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-メッセージ: test: add comprehensive tests for authentication system
-含まれるファイル:
+信息: test: add comprehensive tests for authentication system
+包含的文件:
   • tests/auth.test.ts
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-コミット 3/3
+提交 3/3
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-メッセージ: docs: add authentication system documentation
-含まれるファイル:
+信息: docs: add authentication system documentation
+包含的文件:
   • docs/authentication.md
 
-この分割案でコミットを実行しますか？ (y/n/edit): 
+是否按此拆分方案执行提交？ (y/n/edit): 
 ```
 
-### 実行時の選択肢
+### 执行时的选项
 
-- `y` : 提案されたコミット分割で実行
-- `n` : キャンセル
-- `edit` : コミットメッセージを個別に編集
-- `merge <番号 1> <番号 2>` : 指定したコミットをマージ
-- `split <番号>` : 指定したコミットをさらに分割
+- `y` : 按建议的提交拆分执行
+- `n` : 取消
+- `edit` : 单独编辑提交信息
+- `merge <编号 1> <编号 2>` : 合并指定的提交
+- `split <编号>` : 进一步拆分指定的提交
 
-### Dry Run モード
+### Dry Run 模式
 
 ```bash
 $ /semantic-commit --dry-run
 
-変更分析中... (DRY RUN)
+正在分析变更... (DRY RUN)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[コミット分割提案の表示]
+[显示提交拆分建议]
 
-ℹ️  DRY RUN モード: 実際のコミットは実行されません
-💡 実行する場合は --dry-run オプションを除いて再実行してください
+ℹ️  DRY RUN 模式：不执行实际提交
+💡 如需执行，请去掉 --dry-run 选项后重新运行
 ```
 
-### スマート分析機能
+### 智能分析功能
 
-#### 1. プロジェクト構造の理解
+#### 1. 理解项目结构
 
-- `package.json`, `Cargo.toml`, `pom.xml` などからプロジェクト種別を判定
-- フォルダ構造から機能単位を推測
+- 从 `package.json`, `Cargo.toml`, `pom.xml` 等判断项目类型
+- 从文件夹结构推断功能单元
 
-#### 2. 変更パターンの認識
+#### 2. 识别变更模式
 
 ```bash
-# バグ修正パターンの検出
-- "fix", "bug", "error" などのキーワード
-- 例外処理の追加
-- 条件分岐の修正
+# 检测 Bug 修复模式
+- “fix”, “bug”, “error” 等关键字
+- 添加异常处理
+- 修改条件分支
 
-# 新機能パターンの検出  
-- 新ファイル作成
-- 新メソッド追加
-- API エンドポイント追加
+# 检测新功能模式
+- 创建新文件
+- 添加新方法
+- 添加 API 端点
 ```
 
-#### 3. 依存関係の分析
+#### 3. 分析依赖关系
 
-- インポート文の変更
-- 型定義の追加/修正
-- 設定ファイルとの関連性
+- 导入语句的变更
+- 类型定义的添加/修改
+- 与配置文件的关联性
 
-### 技術的実装
+### 技术实现
 
-#### Git 標準コマンドによる順次コミット実装
+#### 使用 Git 标准命令实现顺序提交
 
-##### 1. 前処理: 現在の状態を保存
+##### 1. 预处理：保存当前状态
 
 ```bash
-# 未ステージの変更がある場合は一旦リセット
+# 如果有未暂存的变更，则暂时重置
 git reset HEAD
 git status --porcelain > /tmp/original_state.txt
 
-# 作業ブランチの確認
+# 确认工作分支
 CURRENT_BRANCH=$(git branch --show-current)
-echo "作業中のブランチ: $CURRENT_BRANCH"
+echo "当前工作分支: $CURRENT_BRANCH"
 ```
 
-##### 2. グループ別の順次コミット実行
+##### 2. 按组顺序执行提交
 
 ```bash
-# 分割計画の読み込み
+# 读取拆分计划
 while IFS= read -r commit_plan; do
   group_num=$(echo "$commit_plan" | cut -d':' -f1)
   files=$(echo "$commit_plan" | cut -d':' -f2- | tr ' ' '\n')
   
-  echo "=== コミット $group_num の実行 ==="
+  echo "=== 正在执行提交 $group_num ==="
   
-  # 該当ファイルのみをステージング
+  # 仅暂存相关文件
   echo "$files" | while read file; do
     if [ -f "$file" ]; then
       git add "$file"
-      echo "ステージング: $file"
+      echo "正在暂存: $file"
     fi
   done
   
-  # ステージング状態の確認
+  # 确认暂存状态
   staged_files=$(git diff --staged --name-only)
   if [ -z "$staged_files" ]; then
-    echo "警告: ステージングされたファイルがありません"
+    echo "警告：没有暂存的文件"
     continue
   fi
   
-  # コミットメッセージの生成（LLM による分析）
+  # 生成提交信息（通过 LLM 分析）
   commit_msg=$(generate_commit_message_for_staged_files)
   
-  # ユーザー確認
-  echo "提案コミットメッセージ: $commit_msg"
-  echo "ステージングされたファイル:"
+  # 用户确认
+  echo "建议的提交信息: $commit_msg"
+  echo "暂存的文件:"
   echo "$staged_files"
-  read -p "このコミットを実行しますか? (y/n): " confirm
+  read -p "是否执行此提交？ (y/n): " confirm
   
   if [ "$confirm" = "y" ]; then
-    # コミット実行
+    # 执行提交
     git commit -m "$commit_msg"
-    echo "✅ コミット $group_num 完了"
+    echo "✅ 提交 $group_num 完成"
   else
-    # ステージングを取り消し
+    # 取消暂存
     git reset HEAD
-    echo "❌ コミット $group_num をスキップ"
+    echo "❌ 已跳过提交 $group_num"
   fi
   
 done < /tmp/commit_plan.txt
 ```
 
-##### 3. エラーハンドリングとロールバック
+##### 3. 错误处理和回滚
 
 ```bash
-# プリコミットフック失敗時の処理
+# 预提交钩子失败时的处理
 commit_with_retry() {
   local commit_msg="$1"
   local max_retries=2
@@ -290,14 +290,14 @@ commit_with_retry() {
   
   while [ $retry_count -lt $max_retries ]; do
     if git commit -m "$commit_msg"; then
-      echo "✅ コミット成功"
+      echo "✅ 提交成功"
       return 0
     else
-      echo "❌ コミット失敗 (試行 $((retry_count + 1))/$max_retries)"
+      echo "❌ 提交失败 (尝试 $((retry_count + 1))/$max_retries)"
       
-      # プリコミットフックによる自動修正を取り込み
+      # 包含预提交钩子自动修复的变更
       if git diff --staged --quiet; then
-        echo "プリコミットフックにより変更が自動修正されました"
+        echo "预提交钩子已自动修复变更"
         git add -u
       fi
       
@@ -305,92 +305,92 @@ commit_with_retry() {
     fi
   done
   
-  echo "❌ コミットに失敗しました。手動で確認してください。"
+  echo "❌ 提交失败。请手动确认。"
   return 1
 }
 
-# 中断からの復旧
+# 从中断中恢复
 resume_from_failure() {
-  echo "中断されたコミット処理を検出しました"
-  echo "現在のステージング状態:"
+  echo "检测到中断的提交处理"
+  echo "当前暂存状态:"
   git status --porcelain
   
-  read -p "処理を続行しますか? (y/n): " resume
+  read -p "是否继续处理？ (y/n): " resume
   if [ "$resume" = "y" ]; then
-    # 最後のコミット位置から再開
+    # 从最后一个提交位置恢复
     last_commit=$(git log --oneline -1 --pretty=format:"%s")
-    echo "最後のコミット: $last_commit"
+    echo "最后一个提交: $last_commit"
   else
-    # 完全リセット
+    # 完全重置
     git reset HEAD
-    echo "処理をリセットしました"
+    echo "已重置处理"
   fi
 }
 ```
 
-##### 4. 完了後の検証
+##### 4. 完成后验证
 
 ```bash
-# 全変更がコミットされたかの確認
+# 确认所有变更是否已提交
 remaining_changes=$(git status --porcelain | wc -l)
 if [ $remaining_changes -eq 0 ]; then
-  echo "✅ すべての変更がコミットされました"
+  echo "✅ 所有变更已提交"
 else
-  echo "⚠️  未コミットの変更が残っています:"
+  echo "⚠️  仍有未提交的变更:"
   git status --short
 fi
 
-# コミット履歴の表示
-echo "作成されたコミット:"
+# 显示提交历史
+echo "创建的提交:"
 git log --oneline -n 10 --graph
 ```
 
-##### 5. 自動プッシュの抑制
+##### 5. 抑制自动推送
 
 ```bash
-# 注意: 自動プッシュは行わない
-echo "📝 注意: 自動プッシュは実行されません"
-echo "必要に応じて以下のコマンドでプッシュしてください:"
+# 注意：不执行自动推送
+echo "📝 注意：不执行自动推送"
+echo "如有需要，请使用以下命令推送:"
 echo "  git push origin $CURRENT_BRANCH"
 ```
 
-#### 分割アルゴリズムの詳細
+#### 拆分算法详情
 
-##### ステップ 1: 初期分析
+##### 步骤 1：初步分析
 
 ```bash
-# 全変更ファイルの取得と分類
+# 获取并分类所有变更文件
 git diff HEAD --name-status | while read status file; do
   echo "$status:$file"
 done > /tmp/changes.txt
 
-# 機能ディレクトリ別の変更統計
+# 按功能目录统计变更
 git diff HEAD --name-only | cut -d'/' -f1-2 | sort | uniq -c
 ```
 
-##### ステップ 2: 機能境界による初期グループ化
+##### 步骤 2：按功能边界进行初步分组
 
 ```bash
-# ディレクトリベースのグループ化
+# 基于目录的分组
 GROUPS=$(git diff HEAD --name-only | cut -d'/' -f1-2 | sort | uniq)
 for group in $GROUPS; do
-  echo "=== グループ: $group ==="
+  echo "=== 组: $group ==="
   git diff HEAD --name-only | grep "^$group" | head -10
 done
 ```
 
-##### ステップ 3: 変更内容の類似性分析
+##### 步骤 3：分析变更内容的相似性
 
 ```bash
-# 各ファイルの変更タイプを分析
+# 分析每个文件的变更类型
 git diff HEAD --name-only | while read file; do
-  # 新規関数/クラス追加の検出
+  # 检测新函数/类的添加
   NEW_FUNCTIONS=$(git diff HEAD -- "$file" | grep -c '^+.*function\|^+.*class\|^+.*def ')
   
-  # バグ修正パターンの検出
+  # 检测 Bug 修复模式
   BUG_FIXES=$(git diff HEAD -- "$file" | grep -c '^+.*fix\|^+.*bug\|^-.*error')
   
-  # テストファイルかの判定
+  # 判断是否为测试文件
   if [[ "$file" =~ test|spec ]]; then
     echo "$file: TEST"
   elif [ $NEW_FUNCTIONS -gt 0 ]; then
@@ -403,29 +403,29 @@ git diff HEAD --name-only | while read file; do
 done
 ```
 
-##### ステップ 4: 依存関係による調整
+##### 步骤 4：根据依赖关系进行调整
 
 ```bash
-# インポート関係の分析
+# 分析导入关系
 git diff HEAD | grep -E '^[+-].*import|^[+-].*from.*import' | \
 while read line; do
   echo "$line" | sed 's/^[+-]//' | awk '{print $2}'
 done | sort | uniq > /tmp/imports.txt
 
-# 関連ファイルのグループ化
+# 分组相关文件
 git diff HEAD --name-only | while read file; do
   basename=$(basename "$file" .js .ts .py)
   related=$(git diff HEAD --name-only | grep "$basename" | grep -v "^$file$")
   if [ -n "$related" ]; then
-    echo "関連ファイル群: $file <-> $related"
+    echo "相关文件组: $file <-> $related"
   fi
 done
 ```
 
-##### ステップ 5: コミットサイズの最適化
+##### 步骤 5：优化提交大小
 
 ```bash
-# グループサイズの調整
+# 调整组大小
 MAX_FILES_PER_COMMIT=8
 current_group=1
 file_count=0
@@ -435,25 +435,25 @@ git diff HEAD --name-only | while read file; do
     current_group=$((current_group + 1))
     file_count=0
   fi
-  echo "コミット $current_group: $file"
+  echo "提交 $current_group: $file"
   file_count=$((file_count + 1))
 done
 ```
 
-##### ステップ 6: 最終グループ決定
+##### 步骤 6：确定最终分组
 
 ```bash
-# 分割結果の検証
+# 验证拆分结果
 for group in $(seq 1 $current_group); do
-  files=$(grep "コミット $group:" /tmp/commit_plan.txt | cut -d':' -f2-)
+  files=$(grep "提交 $group:" /tmp/commit_plan.txt | cut -d':' -f2-)
   lines=$(echo "$files" | xargs git diff HEAD -- | wc -l)
-  echo "コミット $group: $(echo "$files" | wc -w) ファイル, $lines 行変更"
+  echo "提交 $group: $(echo "$files" | wc -w) 个文件, $lines 行变更"
 done
 ```
 
-### Conventional Commits 準拠
+### 遵循 Conventional Commits
 
-#### 基本形式
+#### 基本格式
 
 ```
 <type>[optional scope]: <description>
@@ -463,27 +463,27 @@ done
 [optional footer(s)]
 ```
 
-#### 標準タイプ
+#### 标准类型
 
-**必須タイプ**:
+**必需类型**:
 
-- `feat`: 新機能（ユーザーに見える機能追加）
-- `fix`: バグ修正
+- `feat`: 新功能（用户可见的功能添加）
+- `fix`: Bug 修复
 
-**任意タイプ**:
+**可选类型**:
 
-- `build`: ビルドシステムや外部依存関係の変更
-- `chore`: その他の変更（リリースに影響しない）
-- `ci`: CI 設定ファイルやスクリプトの変更
-- `docs`: ドキュメントのみの変更
-- `style`: コードの意味に影響しない変更（空白、フォーマット、セミコロンなど）
-- `refactor`: バグ修正や機能追加を伴わないコード変更
-- `perf`: パフォーマンス改善
-- `test`: テストの追加や修正
+- `build`: 构建系统或外部依赖的变更
+- `chore`: 其他变更（不影响发布）
+- `ci`: CI 配置文件或脚本的变更
+- `docs`: 仅文档变更
+- `style`: 不影响代码含义的变更（空格、格式、分号等）
+- `refactor`: 不涉及 Bug 修复或功能添加的代码重构
+- `perf`: 性能改进
+- `test`: 添加或修改测试
 
-#### スコープ（任意）
+#### 范围（可选）
 
-変更の影響範囲を示す：
+表示变更的影响范围：
 
 ```
 feat(api): add user authentication endpoint
@@ -493,7 +493,7 @@ docs(readme): update installation instructions
 
 #### Breaking Change
 
-API の破壊的変更がある場合：
+当存在 API 的破坏性变更时：
 
 ```
 feat!: change user API response format
@@ -501,19 +501,19 @@ feat!: change user API response format
 BREAKING CHANGE: user response now includes additional metadata
 ```
 
-または
+或者
 
 ```
 feat(api)!: change authentication flow
 ```
 
-#### プロジェクト規約の自動検出
+#### 自动检测项目规范
 
-**重要**: プロジェクト独自の規約が存在する場合は、それを優先します。
+**重要**: 如果存在项目独有的规范，则优先使用。
 
-##### 1. CommitLint 設定の確認
+##### 1. 确认 CommitLint 配置
 
-以下のファイルから設定を自動検出：
+从以下文件自动检测配置：
 
 - `commitlint.config.js`
 - `commitlint.config.mjs`
@@ -523,18 +523,18 @@ feat(api)!: change authentication flow
 - `.commitlintrc.json`
 - `.commitlintrc.yml`
 - `.commitlintrc.yaml`
-- `package.json` の `commitlint` セクション
+- `package.json` 的 `commitlint` 部分
 
 ```bash
-# 設定ファイル例の確認
+# 确认配置文件示例
 cat commitlint.config.mjs
 cat .commitlintrc.json
 grep -A 10 '"commitlint"' package.json
 ```
 
-##### 2. カスタムタイプの検出
+##### 2. 检测自定义类型
 
-プロジェクト独自のタイプ例：
+项目独有的类型示例：
 
 ```javascript
 // commitlint.config.mjs
@@ -546,44 +546,44 @@ export default {
       'always',
       [
         'feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore',
-        'wip',      // 作業中
-        'hotfix',   // 緊急修正
-        'release',  // リリース
-        'deps',     // 依存関係更新
-        'config'    // 設定変更
+        'wip',      // 进行中
+        'hotfix',   // 紧急修复
+        'release',  // 发布
+        'deps',     // 依赖更新
+        'config'    // 配置变更
       ]
     ]
   }
 }
 ```
 
-##### 3. 言語設定の検出
+##### 3. 检测语言设置
 
 ```javascript
-// プロジェクトが日本語メッセージを使用する場合
+// 如果项目使用中文信息
 export default {
   rules: {
-    'subject-case': [0],  // 日本語対応のため無効化
-    'subject-max-length': [2, 'always', 72]  // 日本語は文字数制限を調整
+    'subject-case': [0],  // 为支持中文而禁用
+    'subject-max-length': [2, 'always', 72]  // 中文的字数限制调整
   }
 }
 ```
 
-#### 自動分析の流れ
+#### 自动分析流程
 
-1. **設定ファイル検索**
+1. **搜索配置文件**
 
    ```bash
    find . -name "commitlint.config.*" -o -name ".commitlintrc.*" | head -1
    ```
 
-2. **既存コミット分析**
+2. **分析现有提交**
 
    ```bash
    git log --oneline -50 --pretty=format:"%s"
    ```
 
-3. **使用タイプ統計**
+3. **统计使用类型**
 
    ```bash
    git log --oneline -100 --pretty=format:"%s" | \
@@ -591,9 +591,9 @@ export default {
    sort | uniq -c | sort -nr
    ```
 
-#### プロジェクト規約の例
+#### 项目规范示例
 
-##### Angular スタイル
+##### Angular 风格
 
 ```
 feat(scope): add new feature
@@ -601,7 +601,7 @@ fix(scope): fix bug
 docs(scope): update documentation
 ```
 
-##### Gitmoji 併用スタイル
+##### 与 Gitmoji 结合的风格
 
 ```
 ✨ feat: add user registration
@@ -609,99 +609,99 @@ docs(scope): update documentation
 📚 docs: update API docs
 ```
 
-##### 日本語プロジェクト
+##### 中文项目
 
 ```
-feat: ユーザー登録機能を追加
-fix: ログイン処理のバグを修正
-docs: API ドキュメントを更新
+feat: 添加用户注册功能
+fix: 修复登录处理的 Bug
+docs: 更新 API 文档
 ```
 
-### 言語判定
+### 语言判断
 
-このコマンドで完結する言語判定ロジック：
+此命令内完成的语言判断逻辑：
 
-1. **CommitLint 設定**から言語設定を確認
+1. **从 CommitLint 配置**确认语言设置
 
    ```bash
-   # subject-case ルールが無効化されている場合は日本語と判定
+   # 如果 subject-case 规则被禁用，则判断为中文
    grep -E '"subject-case".*\[0\]|subject-case.*0' commitlint.config.*
    ```
 
-2. **git log 分析**による自動判定
+2. **通过 git log 分析**自动判断
 
    ```bash
-   # 最近 20 コミットの言語を分析
+   # 分析最近 20 个提交的语言
    git log --oneline -20 --pretty=format:"%s" | \
-   grep -E '^[あ-ん]|[ア-ン]|[一-龯]' | wc -l
-   # 50% 以上が日本語なら日本語モード
+   grep -cE '[\u4e00-\u9fa5]' 2>/dev/null || echo 0
+   # 如果 50% 以上是中文，则为中文模式
    ```
 
-3. **プロジェクトファイル**の言語設定
+3. **项目文件**的语言设置
 
    ```bash
-   # README.md の言語確認
-   head -10 README.md | grep -E '^[あ-ん]|[ア-ン]|[一-龯]' | wc -l
+   # 确认 README.md 的语言
+   head -10 README.md | grep -E '[\u4e00-\u9fa5]' | wc -l
    
-   # package.json の description 確認
-   grep -E '"description".*[あ-ん]|[ア-ン]|[一-龯]' package.json
+   # 确认 package.json 的 description
+   grep -E '"description".*[一-龥]' package.json
    ```
 
-4. **変更ファイル内**のコメント・文字列分析
+4. **分析变更文件内**的注释/字符串
 
    ```bash
-   # 変更されたファイルのコメント言語を確認
-   git diff HEAD | grep -E '^[+-].*//.*[あ-ん]|[ア-ン]|[一-龯]' | wc -l
+   # 确认变更文件的注释语言
+   git diff HEAD | grep -E '^[+-].*//.*[一-龥]' | wc -l
    ```
 
-#### 判定アルゴリズム
+#### 判断算法
 
 ```bash
-# 言語判定スコア計算
-JAPANESE_SCORE=0
+# 语言判断分数计算
+CHINESE_SCORE=0
 
-# 1. CommitLint 設定 (+3 点)
+# 1. CommitLint 配置 (+3 分)
 if grep -q '"subject-case".*\[0\]' commitlint.config.* 2>/dev/null; then
-  JAPANESE_SCORE=$((JAPANESE_SCORE + 3))
+  CHINESE_SCORE=$((CHINESE_SCORE + 3))
 fi
 
-# 2. git log 分析 (最大+2 点)
-JAPANESE_COMMITS=$(git log --oneline -20 --pretty=format:"%s" | \
-  grep -cE '[あ-ん]|[ア-ン]|[一-龯]' 2>/dev/null || echo 0)
-if [ $JAPANESE_COMMITS -gt 10 ]; then
-  JAPANESE_SCORE=$((JAPANESE_SCORE + 2))
-elif [ $JAPANESE_COMMITS -gt 5 ]; then
-  JAPANESE_SCORE=$((JAPANESE_SCORE + 1))
+# 2. git log 分析 (最多+2 分)
+CHINESE_COMMITS=$(git log --oneline -20 --pretty=format:"%s" | \
+  grep -cE '[\u4e00-\u9fa5]' 2>/dev/null || echo 0)
+if [ $CHINESE_COMMITS -gt 10 ]; then
+  CHINESE_SCORE=$((CHINESE_SCORE + 2))
+elif [ $CHINESE_COMMITS -gt 5 ]; then
+  CHINESE_SCORE=$((CHINESE_SCORE + 1))
 fi
 
-# 3. README.md 確認 (+1 点)
-if head -5 README.md 2>/dev/null | grep -qE '[あ-ん]|[ア-ン]|[一-龯]'; then
-  JAPANESE_SCORE=$((JAPANESE_SCORE + 1))
+# 3. 确认 README.md (+1 分)
+if head -5 README.md 2>/dev/null | grep -qE '[\u4e00-\u9fa5]'; then
+  CHINESE_SCORE=$((CHINESE_SCORE + 1))
 fi
 
-# 4. 変更ファイル内容確認 (+1 点)
-if git diff HEAD 2>/dev/null | grep -qE '^[+-].*[あ-ん]|[ア-ン]|[一-龯]'; then
-  JAPANESE_SCORE=$((JAPANESE_SCORE + 1))
+# 4. 确认变更文件内容 (+1 分)
+if git diff HEAD 2>/dev/null | grep -qE '^[+-].*[一-龥]'; then
+  CHINESE_SCORE=$((CHINESE_SCORE + 1))
 fi
 
-# 判定: 3 点以上で日本語モード
-if [ $JAPANESE_SCORE -ge 3 ]; then
-  LANGUAGE="ja"
+# 判断：3 分以上为中文模式
+if [ $CHINESE_SCORE -ge 3 ]; then
+  LANGUAGE="zh"
 else
   LANGUAGE="en"
 fi
 ```
 
-### 設定ファイル自動読み込み
+### 自动读取配置文件
 
-#### 実行時の動作
+#### 执行时的行为
 
-コマンド実行時に以下の順序で設定を確認：
+命令执行时按以下顺序确认配置：
 
-1. **CommitLint 設定ファイルの検索**
+1. **搜索 CommitLint 配置文件**
 
    ```bash
-   # 以下の順序で検索し、最初に見つかったファイルを使用
+   # 按以下顺序搜索，并使用第一个找到的文件
    commitlint.config.mjs
    commitlint.config.js  
    commitlint.config.cjs
@@ -710,26 +710,26 @@ fi
    .commitlintrc.json
    .commitlintrc.yml
    .commitlintrc.yaml
-   package.json (commitlint セクション)
+   package.json (commitlint 部分)
    ```
 
-2. **設定内容の解析**
-   - 使用可能なタイプの一覧を抽出
-   - スコープの制限があるかを確認
-   - メッセージ長制限の取得
-   - 言語設定の確認
+2. **解析配置内容**
+   - 提取可用的类型列表
+   - 确认是否有范围限制
+   - 获取信息长度限制
+   - 确认语言设置
 
-3. **既存コミット履歴の分析**
+3. **分析现有提交历史**
 
    ```bash
-   # 最近のコミットから使用パターンを学習
+   # 从最近的提交中学习使用模式
    git log --oneline -100 --pretty=format:"%s" | \
    head -20
    ```
 
-#### 設定例の分析
+#### 配置示例分析
 
-**標準的な commitlint.config.mjs**:
+**标准的 commitlint.config.mjs**:
 
 ```javascript
 export default {
@@ -749,13 +749,13 @@ export default {
 }
 ```
 
-**日本語対応の設定**:
+**支持中文的配置**:
 
 ```javascript
 export default {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    'subject-case': [0],  // 日本語のため無効化
+    'subject-case': [0],  // 为支持中文而禁用
     'subject-max-length': [2, 'always', 72],
     'type-enum': [
       2,
@@ -766,7 +766,7 @@ export default {
 }
 ```
 
-**カスタムタイプを含む設定**:
+**包含自定义类型的配置**:
 
 ```javascript
 export default {
@@ -778,87 +778,87 @@ export default {
       [
         'feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore',
         'wip',      // Work in Progress
-        'hotfix',   // 緊急修正
-        'release',  // リリース準備
-        'deps',     // 依存関係更新
-        'config'    // 設定変更
+        'hotfix',   // 紧急修复
+        'release',  // 准备发布
+        'deps',     // 依赖更新
+        'config'    // 配置变更
       ]
     ]
   }
 }
 ```
 
-#### フォールバック動作
+#### 回退行为
 
-設定ファイルが見つからない場合：
+如果找不到配置文件：
 
-1. **git log 分析**による自動推測
+1. **通过 git log 分析**自动推断
 
    ```bash
-   # 最近 100 コミットからタイプを抽出
+   # 从最近 100 个提交中提取类型
    git log --oneline -100 --pretty=format:"%s" | \
    grep -oE '^[a-z]+(\([^)]+\))?' | \
    sort | uniq -c | sort -nr
    ```
 
-2. **Conventional Commits 標準**をデフォルト使用
+2. **默认使用 Conventional Commits 标准**
 
    ```
    feat, fix, docs, style, refactor, perf, test, chore, build, ci
    ```
 
-3. **言語判定**
-   - 日本語コミットが 50% 以上 → 日本語モード
-   - その他 → 英語モード
+3. **语言判断**
+   - 中文提交占 50% 以上 → 中文模式
+   - 其他 → 英文模式
 
 ### 前提条件
 
-- Git リポジトリ内で実行
-- 未コミットの変更が存在すること
-- ステージングされた変更は一旦リセットされます
+- 在 Git 仓库内执行
+- 存在未提交的变更
+- 已暂存的变更将被暂时重置
 
-### 注意事項
+### 注意事项
 
-- **自動プッシュなし**: コミット後の `git push` は手動実行
-- **ブランチ作成なし**: 現在のブランチでコミット
-- **バックアップ推奨**: 重要な変更前には `git stash` でバックアップ
+- **无自动推送**: 提交后的 `git push` 需手动执行
+- **无分支创建**: 在当前分支上提交
+- **建议备份**: 在进行重要变更前使用 `git stash` 备份
 
-### プロジェクト規約の優先度
+### 项目规范的优先级
 
-コミットメッセージ生成時の優先度：
+生成提交信息时的优先级：
 
-1. **CommitLint 設定** (最優先)
-   - `commitlint.config.*` ファイルの設定
-   - カスタムタイプやスコープの制限
-   - メッセージ長やケースの制限
+1. **CommitLint 配置** (最高优先级)
+   - `commitlint.config.*` 文件的配置
+   - 自定义类型或范围的限制
+   - 信息长度或大小写的限制
 
-2. **既存コミット履歴** (第 2 優先)
-   - 実際に使用されているタイプの統計
-   - メッセージの言語（日本語/英語）
-   - スコープの使用パターン
+2. **现有提交历史** (第二优先级)
+   - 实际使用的类型统计
+   - 信息的语言（中文/英文）
+   - 范围的使用模式
 
-3. **プロジェクト種別** (第 3 優先)
-   - `package.json` → Node.js プロジェクト
-   - `Cargo.toml` → Rust プロジェクト  
-   - `pom.xml` → Java プロジェクト
+3. **项目类型** (第三优先级)
+   - `package.json` → Node.js 项目
+   - `Cargo.toml` → Rust 项目  
+   - `pom.xml` → Java 项目
 
-4. **Conventional Commits 標準** (フォールバック)
-   - 設定が見つからない場合の標準動作
+4. **Conventional Commits 标准** (回退)
+   - 找不到配置时的标准行为
 
-#### 規約検出の実例
+#### 规范检测实例
 
-**Monorepo での scope 自動検出**:
+**在 Monorepo 中自动检测 scope**:
 
 ```bash
-# packages/ フォルダから scope を推測
-ls packages/ | head -10
-# → api, ui, core, auth などを scope として提案
+# 从 packages/ 文件夹推断 scope
+l s packages/ | head -10
+# → 建议将 api, ui, core, auth 等作为 scope
 ```
 
-**フレームワーク固有の規約**:
+**框架特有的规范**:
 
 ```javascript
-// Angular プロジェクトの場合
+// Angular 项目的情况
 {
   'scope-enum': [2, 'always', [
     'animations', 'common', 'core', 'forms', 'http', 'platform-browser',
@@ -866,7 +866,7 @@ ls packages/ | head -10
   ]]
 }
 
-// React プロジェクトの場合  
+// React 项目的情况
 {
   'scope-enum': [2, 'always', [
     'components', 'hooks', 'utils', 'types', 'styles', 'api'
@@ -874,253 +874,253 @@ ls packages/ | head -10
 }
 ```
 
-**企業・チーム固有の規約**:
+**企业/团队特有的规范**:
 
 ```javascript
-// 日本の企業でよく見られるパターン
+// 在中国公司常见的模式
 {
   'type-enum': [2, 'always', [
     'feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore',
-    'wip',      // 作業中（プルリクエスト用）
-    'hotfix',   // 緊急修正
-    'release'   // リリース準備
+    'wip',      // 进行中（用于拉取请求）
+    'hotfix',   // 紧急修复
+    'release'   // 准备发布
   ]],
-  'subject-case': [0],  // 日本語対応
-  'subject-max-length': [2, 'always', 72]  // 日本語は長めに設定
+  'subject-case': [0],  // 支持中文
+  'subject-max-length': [2, 'always', 72]  // 中文设置得更长
 }
 ```
 
-### ベストプラクティス
+### 最佳实践
 
-1. **プロジェクト規約の尊重**: 既存の設定やパターンに従う
-2. **小さな変更単位**: 1 つのコミットは 1 つの論理的変更
-3. **明確なメッセージ**: 何を変更したかが明確
-4. **関連性の重視**: 機能的に関連するファイルをグループ化
-5. **テストの分離**: テストファイルは別コミットに
-6. **設定ファイルの活用**: CommitLint を導入してチーム全体で規約を統一
+1. **尊重项目规范**: 遵循现有的配置和模式
+2. **小的变更单元**: 一个提交对应一个逻辑变更
+3. **明确的信息**: 清楚地说明变更了什么
+4. **重视关联性**: 将功能上相关的文件分组
+5. **分离测试**: 将测试文件放在单独的提交中
+6. **利用配置文件**: 引入 CommitLint，在整个团队中统一规范
 
-### 実際の分割例（Before/After）
+### 实际拆分示例（Before/After）
 
-#### 例 1: 大規模な認証システム追加
+#### 示例 1：大规模认证系统添加
 
-**Before（1 つの巨大なコミット）:**
+**Before（一个巨大的提交）:**
 
 ```bash
-# 変更されたファイル（15 ファイル、850 行変更）
-src/auth/login.js          # 新規作成
-src/auth/register.js       # 新規作成  
-src/auth/password.js       # 新規作成
-src/auth/types.js          # 新規作成
-src/api/auth-routes.js     # 新規作成
-src/middleware/auth.js     # 新規作成
-src/database/migrations/001_users.sql  # 新規作成
-src/database/models/user.js            # 新規作成
-tests/auth/login.test.js   # 新規作成
-tests/auth/register.test.js # 新規作成
-tests/api/auth-routes.test.js # 新規作成
-docs/authentication.md    # 新規作成
-package.json              # 依存関係追加
-README.md                 # 使用方法追加
-.env.example             # 環境変数例追加
+# 变更的文件（15 个文件，850 行变更）
+src/auth/login.js          # 新建
+src/auth/register.js       # 新建
+src/auth/password.js       # 新建
+src/auth/types.js          # 新建
+src/api/auth-routes.js     # 新建
+src/middleware/auth.js     # 新建
+src/database/migrations/001_users.sql  # 新建
+src/database/models/user.js            # 新建
+tests/auth/login.test.js   # 新建
+tests/auth/register.test.js # 新建
+tests/api/auth-routes.test.js # 新建
+docs/authentication.md    # 新建
+package.json              # 添加依赖
+README.md                 # 添加使用方法
+.env.example             # 添加环境变量示例
 
-# 従来の問題のあるコミット
+# 有问题的传统提交
 feat: implement complete user authentication system with login, registration, password reset, API routes, database models, tests and documentation
 ```
 
-**After（意味のある 5 つのコミットに分割）:**
+**After（按类型拆分为 5 个提交）:**
 
 ```bash
-# コミット 1: データベース基盤
+# 提交 1：数据库基础
 feat(db): add user model and authentication schema
 
-含まれるファイル:
+包含的文件:
 - src/database/migrations/001_users.sql
 - src/database/models/user.js
 - src/auth/types.js
 
-理由: データベース構造は他の機能の基盤となるため最初にコミット
+原因: 数据库结构是其他功能的基础，因此最先提交
 
-# コミット 2: 認証ロジック
+# 提交 2：认证逻辑
 feat(auth): implement core authentication functionality  
 
-含まれるファイル:
+包含的文件:
 - src/auth/login.js
 - src/auth/register.js
 - src/auth/password.js
 - src/middleware/auth.js
 
-理由: 認証の核となるビジネスロジックを一括でコミット
+原因: 将认证的核心业务逻辑一次性提交
 
-# コミット 3: API エンドポイント
+# 提交 3：API 端点
 feat(api): add authentication API routes
 
-含まれるファイル:
+包含的文件:
 - src/api/auth-routes.js
 
-理由: API レイヤーは認証ロジックに依存するため後でコミット
+原因: API 层依赖于认证逻辑，因此稍后提交
 
-# コミット 4: 包括的なテスト
+# 提交 4：全面的测试
 test(auth): add comprehensive authentication tests
 
-含まれるファイル:
+包含的文件:
 - tests/auth/login.test.js
 - tests/auth/register.test.js  
 - tests/api/auth-routes.test.js
 
-理由: 実装完了後にテストを一括追加
+原因: 实现完成后一次性添加测试
 
-# コミット 5: 設定とドキュメント
+# 提交 5：配置和文档
 docs(auth): add authentication documentation and configuration
 
-含まれるファイル:
+包含的文件:
 - docs/authentication.md
 - package.json
 - README.md
 - .env.example
 
-理由: ドキュメントと設定は最後にまとめてコミット
+原因: 最后统一提交文档和配置
 ```
 
-#### 例 2: バグ修正とリファクタリングの混在
+#### 示例 2：Bug 修复和重构混合
 
-**Before（混在した問題のあるコミット）:**
+**Before（混合了问题的提交）:**
 
 ```bash
-# 変更されたファイル（8 ファイル、320 行変更）
-src/user/service.js       # バグ修正 + リファクタリング
-src/user/validator.js     # 新規作成（リファクタリング）
-src/auth/middleware.js    # バグ修正
-src/api/user-routes.js    # バグ修正 + エラーハンドリング改善
-tests/user.test.js        # テスト追加
-tests/auth.test.js        # バグ修正テスト追加
-docs/user-api.md          # ドキュメント更新
-package.json              # 依存関係更新
+# 变更的文件（8 个文件，320 行变更）
+src/user/service.js       # Bug 修复 + 重构
+src/user/validator.js     # 新建（重构）
+src/auth/middleware.js    # Bug 修复
+src/api/user-routes.js    # Bug 修复 + 错误处理改进
+tests/user.test.js        # 添加测试
+tests/auth.test.js        # 添加 Bug 修复测试
+docs/user-api.md          # 更新文档
+package.json              # 更新依赖
 
-# 問題のあるコミット
+# 有问题的提交
 fix: resolve user validation bugs and refactor validation logic with improved error handling
 ```
 
-**After（種別別に 3 つのコミットに分割）:**
+**After（按类型拆分为 3 个提交）:**
 
 ```bash
-# コミット 1: 緊急バグ修正
+# 提交 1：紧急 Bug 修复
 fix: resolve user validation and authentication bugs
 
-含まれるファイル:
-- src/user/service.js（バグ修正部分のみ）
+包含的文件:
+- src/user/service.js（仅 Bug 修复部分）
 - src/auth/middleware.js
-- tests/auth.test.js（バグ修正テストのみ）
+- tests/auth.test.js（仅 Bug 修复测试）
 
-理由: 本番環境に影響するバグは最優先で修正
+原因: 影响生产环境的 Bug 最优先修复
 
-# コミット 2: バリデーションロジックのリファクタリング  
+# 提交 2：验证逻辑重构
 refactor: extract and improve user validation logic
 
-含まれるファイル:
-- src/user/service.js（リファクタリング部分）
+包含的文件:
+- src/user/service.js（重构部分）
 - src/user/validator.js
 - src/api/user-routes.js
 - tests/user.test.js
 
-理由: 構造改善は機能単位でまとめてコミット
+原因: 按功能单元统一提交结构改进
 
-# コミット 3: ドキュメントと依存関係更新
+# 提交 3：文档和依赖更新
 chore: update documentation and dependencies
 
-含まれるファイル:
+包含的文件:
 - docs/user-api.md
 - package.json
 
-理由: 開発環境の整備は最後にまとめてコミット
+原因: 最后统一提交开发环境的整理
 ```
 
-#### 例 3: 複数機能の同時開発
+#### 示例 3：多功能同时开发
 
-**Before（機能横断の巨大コミット）:**
+**Before（跨功能的巨大提交）:**
 
 ```bash
-# 変更されたファイル（12 ファイル、600 行変更）
-src/user/profile.js       # 新機能 A
-src/user/avatar.js        # 新機能 A  
-src/notification/email.js # 新機能 B
-src/notification/sms.js   # 新機能 B
-src/api/profile-routes.js # 新機能 A 用 API
-src/api/notification-routes.js # 新機能 B 用 API
-src/dashboard/widgets.js  # 新機能 C
-src/dashboard/charts.js   # 新機能 C
-tests/profile.test.js     # 新機能 A 用テスト
-tests/notification.test.js # 新機能 B 用テスト  
-tests/dashboard.test.js   # 新機能 C 用テスト
-package.json              # 全機能の依存関係
+# 变更的文件（12 个文件，600 行变更）
+src/user/profile.js       # 新功能 A
+src/user/avatar.js        # 新功能 A  
+src/notification/email.js # 新功能 B
+src/notification/sms.js   # 新功能 B
+src/api/profile-routes.js # 新功能 A 的 API
+src/api/notification-routes.js # 新功能 B 的 API
+src/dashboard/widgets.js  # 新功能 C
+src/dashboard/charts.js   # 新功能 C
+tests/profile.test.js     # 新功能 A 的测试
+tests/notification.test.js # 新功能 B 的测试
+tests/dashboard.test.js   # 新功能 C 的测试
+package.json              # 所有功能的依赖
 
-# 問題のあるコミット  
+# 有问题的提交
 feat: add user profile management, notification system and dashboard widgets
 ```
 
-**After（機能別に 4 つのコミットに分割）:**
+**After（按功能拆分为 4 个提交）:**
 
 ```bash
-# コミット 1: ユーザープロフィール機能
+# 提交 1：用户个人资料功能
 feat(profile): add user profile management
 
-含まれるファイル:
+包含的文件:
 - src/user/profile.js
 - src/user/avatar.js
 - src/api/profile-routes.js
 - tests/profile.test.js
 
-理由: プロフィール機能は独立した機能単位
+原因: 个人资料功能是独立的功能单元
 
-# コミット 2: 通知システム
+# 提交 2：通知系统
 feat(notification): implement email and SMS notifications
 
-含まれるファイル:
+包含的文件:
 - src/notification/email.js
 - src/notification/sms.js  
 - src/api/notification-routes.js
 - tests/notification.test.js
 
-理由: 通知機能は独立した機能単位
+原因: 通知功能是独立的功能单元
 
-# コミット 3: ダッシュボードウィジェット
+# 提交 3：仪表板小部件
 feat(dashboard): add interactive widgets and charts
 
-含まれるファイル:
+包含的文件:
 - src/dashboard/widgets.js
 - src/dashboard/charts.js
 - tests/dashboard.test.js
 
-理由: ダッシュボード機能は独立した機能単位
+原因: 仪表板功能是独立的功能单元
 
-# コミット 4: 依存関係とインフラ更新
+# 提交 4：依赖和基础设施更新
 chore: update dependencies for new features
 
-含まれるファイル:
+包含的文件:
 - package.json
 
-理由: 共通の依存関係更新は最後にまとめて
+原因: 最后统一更新公共依赖
 ```
 
-### 分割効果の比較
+### 拆分效果比较
 
-| 項目 | Before（巨大コミット） | After（適切な分割） |
-|------|---------------------|-------------------|
-| **レビュー性** | ❌ 非常に困難 | ✅ 各コミットが小さくレビュー可能 |
-| **バグ追跡** | ❌ 問題箇所の特定が困難 | ✅ 問題のあるコミットを即座に特定 |
-| **リバート** | ❌ 全体をリバートする必要 | ✅ 問題部分のみをピンポイントでリバート |
-| **並行開発** | ❌ コンフリクトが発生しやすい | ✅ 機能別でマージが容易 |
-| **デプロイ** | ❌ 全機能を一括デプロイ | ✅ 段階的なデプロイが可能 |
+| 项目 | Before（巨大提交） | After（适当拆分） |
+|---|---|---|
+| **可审查性** | ❌ 非常困难 | ✅ 每个提交都很小，易于审查 |
+| **Bug 追踪** | ❌ 难以定位问题 | ✅ 可立即定位有问题的提交 |
+| **回滚** | ❌ 需要回滚整个变更 | ✅ 可精确回滚问题部分 |
+| **并行开发** | ❌ 容易发生冲突 | ✅ 按功能易于合并 |
+| **部署** | ❌ 一次性部署所有功能 | ✅ 可分阶段部署 |
 
-### トラブルシューティング
+### 故障排除
 
-#### コミット失敗時
+#### 提交失败时
 
-- プリコミットフックの確認
-- 依存関係の解決
-- 個別ファイルでの再試行
+- 确认预提交钩子
+- 解决依赖关系
+- 在单个文件上重试
 
-#### 分割が適切でない場合
+#### 拆分不合适时
 
-- `--max-commits` オプションで調整
-- 手動での `edit` モード使用
-- より細かい単位での再実行
+- 使用 `--max-commits` 选项调整
+- 手动使用 `edit` 模式
+- 以更小的单元重新执行

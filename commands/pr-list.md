@@ -1,66 +1,66 @@
-## PR List
+## PR 列表
 
-現在のリポジトリのオープン PR 一覧を優先順位付きで表示します。
+按优先级显示当前仓库的开放 PR 列表。
 
-### 使い方
+### 使用方法
 
 ```bash
-# Claude に依頼
-「オープン PR 一覧を優先順位付きで表示して」
+# 请求 Claude
+“请按优先级显示开放 PR 列表”
 ```
 
-### 基本例
+### 基本示例
 
 ```bash
-# リポジトリ情報を取得
+# 获取仓库信息
 gh repo view --json nameWithOwner | jq -r '.nameWithOwner'
 
-# オープン PR 情報を取得して Claude に依頼
+# 获取开放 PR 信息并请求 Claude
 gh pr list --state open --draft=false --json number,title,author,createdAt,additions,deletions,reviews --limit 30
 
-「上記の PR を優先度別に整理して、各 PR の 2 行概要も含めて表示して。URL は上記で取得したリポジトリ名を使用して生成して」
+“请按优先级整理上述 PR，并显示每个 PR 的两行摘要。请使用上面获取的仓库名称生成 URL”
 ```
 
-### 表示形式
+### 显示格式
 
 ```
-オープン PR 一覧（優先順位順）
+开放 PR 列表（按优先级排序）
 
-### 高優先度
-#番号 タイトル [Draft/DNM] | 作者 | オープンから経過時間 | Approved 数 | +追加/-削除
-      ├─ 概要 1 行目
-      └─ 概要 2 行目
-      https://github.com/owner/repo/pull/番号
+### 高优先级
+#编号 标题 [Draft/DNM] | 作者 | 自开放以来的时间 | Approved 数量 | +添加/-删除
+      ├─ 摘要第一行
+      └─ 摘要第二行
+      https://github.com/owner/repo/pull/编号
 
-### 中優先度
-（同様の形式）
+### 中优先级
+（格式同上）
 
-### 低優先度
-（同様の形式）
+### 低优先级
+（格式同上）
 ```
 
-### 優先度の判定基準
+### 优先级判断标准
 
-**高優先度**
+**高优先级**
 
-- `fix:` バグ修正
-- `release:` リリース作業
+- `fix:` 错误修复
+- `release:` 发布工作
 
-**中優先度**
+**中优先级**
 
-- `feat:` 新機能
-- `update:` 機能改善
-- その他通常の PR
+- `feat:` 新功能
+- `update:` 功能改进
+- 其他常规 PR
 
-**低優先度**
+**低优先级**
 
-- DO NOT MERGE を含む PR
-- Draft で `test:`、`build:`、`perf:` の PR
+- 包含 DO NOT MERGE 的 PR
+- Draft 状态的 `test:`、`build:`、`perf:` PR
 
-### 注意事項
+### 注意事项
 
-- GitHub CLI (`gh`) が必要です
-- オープン状態の PR のみ表示します（Draft は除外）
-- 最大 30 件の PR を表示します
-- 経過時間は PR がオープンされてからの時間です
-- PR の URL は実際のリポジトリ名から自動生成されます
+- 需要 GitHub CLI (`gh`)
+- 仅显示开放状态的 PR（不包括 Draft）
+- 最多显示 30 个 PR
+- 经过时间是指 PR 开放以来的时间
+- PR 的 URL 是根据实际仓库名称自动生成的
